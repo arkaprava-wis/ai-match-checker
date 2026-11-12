@@ -1,0 +1,152 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Exams</h2>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                   
+                    <input type="search" name="name" id="name" class="form-control" placeholder="Search by exam name" value="{{ current_filters.name }}">
+                </div>
+                <div class="col-md-4">
+                    
+                    <input type="date" name="date" id="date" class="form-control" value="{{ current_filters.date }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filter</button>
+                    <a href="{% url 'exam_list' %}" class="btn btn-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+        {% if user_can_add_exam %}
+        <div class="card-footer text-end">
+            <a href="{% url 'create_exam' %}" class="btn btn-primary">Add Exam</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Exam Name</th>
+                <th>Exam Date</th>
+                <th>Exam Level</th>
+                <th>Total Questions</th>
+                <th>Assigned Students</th>
+                <th>Appeared Students</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exam in object_list %}
+            <tr>
+                <td>{{ exam.name }}</td>
+                <td>{{ exam.exam_date }}</td>
+                <!-- <td>{{ exam.exam_code }}</td> -->
+                <!-- <td>{{ exam.place }}</td> -->
+                <td>{{ exam.get_level_display }}</td>
+                <td>{{ exam.number_of_questions }}</td>
+                <td>{{ exam.total_students|default:"0" }}</td>
+                <td>{{ exam.total_answer_sheets|default:"0" }}</td>
+                <td>
+                    {% if user_can_add_exam %}
+                        <a href="{% url 'exam_answer_key' exam.id %}" class="btn btn-sm btn-primary">Set Answer Key</a>
+                    {% endif %}
+
+                    {% if user_can_update_exam %}
+                        <a href="{% url 'exam_update' exam.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    {% endif %}
+
+                    {% if user_can_add_exam %}
+                        <a href="{% url 'exam_assign_students_page' exam.id %}" class="btn btn-sm btn-outline-primary">Assign Students</a>
+                    {% endif %}
+
+                    {% if user_can_delete_exam %}
+                        <button type="button"
+                                class="btn btn-sm btn-danger delete-exam-btn"
+                                data-delete-url="{% url 'delete_exam' exam.id %}"
+                                data-exam-name="{{ exam.name }}">
+                            <i class="bx bx-trash"></i> Delete
+                        </button>
+                    {% endif %}
+
+                    {% with exam_date_str=exam.exam_date|date:"Y-m-d" %}
+                        {% if exam_date_str == today_date %}
+                            {% if user_can_add_exam %}
+                             <a href="{% url 'exam_detail' exam.id %}" class="btn btn-sm btn-info">View</a>
+                            {% else %}
+                             <a href="#" class="btn btn-sm btn-info disabled" aria-disabled="true"></a>
+                            {% endif %}
+                        {% elif exam_date_str > today_date %}
+                            {% if user_can_add_exam %}
+                            <a href="{% url 'exam_detail' exam.id %}" class="btn btn-sm btn-info">View</a>
+                            {% else %}
+                             <a href="#" class="btn btn-sm btn-info disabled" aria-disabled="true">View</a>
+                            {% endif %}
+                        {% else %}
+                             
+                            <a href="{% url 'exam_results' exam.id %}" class="btn btn-sm btn-success">View Results</a>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Delete exam buttons in the exams table.
+    document.querySelectorAll('.delete-exam-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
+
+            const deleteUrl = button.dataset.deleteUrl;
+            const examName = button.dataset.examName || 'this exam';
+
+            const confirmed = confirm(
+                'Delete exam "' + examName + '"?\n\n' +
+                'This permanently removes its answer key, assigned students, ' +
+                'uploaded photos and evaluation results. This cannot be undone.'
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            button.disabled = true;
+
+            fetch(deleteUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.success) {
+                        const row = button.closest('tr');
+                        if (row) {
+                            row.remove();
+                        }
+                        alert(data.message);
+                    } else {
+                        button.disabled = false;
+                        alert(data.message || 'Unable to delete the exam.');
+                    }
+                })
+                .catch(function () {
+                    button.disabled = false;
+                    alert('An error occurred while deleting the exam.');
+                });
+        });
+    });
+</script>
+{% endblock %}

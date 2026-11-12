@@ -1,0 +1,430 @@
+{% extends 'checker/base.html' %}
+{% load static %}
+
+{% block title %}Analyze Image - Enhanced Math Checker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-12">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white text-center py-4">
+                <h2 class="mb-2">
+                    <i class="fas fa-search me-2"></i>Enhanced AI Math Worksheet Analyzer
+                </h2>
+                <p class="mb-0 opacity-90">Automatically extracts student info, center name, and processes all worksheet formats</p>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card bg-light">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-image me-2"></i>Uploaded Worksheet</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <img src="{{ image.image.url }}" class="img-fluid rounded shadow" alt="Uploaded worksheet" style="max-height: 400px;">
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Uploaded: {{ image.uploaded_at|date:"M d, Y H:i" }}
+                                        {% if image.file_size %}
+                                            <br>Size: {{ image.file_size|filesizeformat }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Student Information Preview -->
+                        <div class="card mt-4 border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Auto-Detection Preview</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if image.student_name or image.center_name %}
+                                    <div class="alert alert-success mb-2">
+                                        <i class="fas fa-check me-2"></i>Some information already detected
+                                    </div>
+                                    {% if image.student_name %}
+                                        <p class="mb-1"><strong>Student:</strong> {{ image.student_name }}</p>
+                                    {% endif %}
+                                    {% if image.center_name %}
+                                        <p class="mb-1"><strong>Center:</strong> {{ image.center_name }}</p>
+                                    {% endif %}
+                                    {% if image.roll_number %}
+                                        <p class="mb-1"><strong>Roll:</strong> {{ image.roll_number }}</p>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="alert alert-info mb-2">
+                                        <i class="fas fa-info me-2"></i>Will extract during analysis
+                                    </div>
+                                    <p class="text-muted mb-0">AI will automatically detect student name, center name, and format type from the worksheet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Enhanced Processing Features</h5>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-4">
+                                    <h6 class="text-primary"><i class="fas fa-robot me-2"></i>Multi-Format Support:</h6>
+                                    
+                                    <!-- Format Type Cards -->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card border-success mb-2">
+                                                <div class="card-body p-2 text-center">
+                                                    <i class="fas fa-table text-success fa-2x mb-1"></i>
+                                                    <h6 class="card-title text-success mb-1">Section Tables</h6>
+                                                    <small class="text-muted">Section A, B, C...</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card border-warning mb-2">
+                                                <div class="card-body p-2 text-center">
+                                                    <i class="fas fa-list-ol text-warning fa-2x mb-1"></i>
+                                                    <h6 class="card-title text-warning mb-1">Problems</h6>
+                                                    <small class="text-muted">P1, P2, P3...</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card border-info mb-2">
+                                                <div class="card-body p-2 text-center">
+                                                    <i class="fas fa-th text-info fa-2x mb-1"></i>
+                                                    <h6 class="card-title text-info mb-1">Numbered</h6>
+                                                    <small class="text-muted">1, 2, 3... 40</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="text-primary mt-3"><i class="fas fa-eye me-2"></i>Auto-Detection Features:</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-user text-success me-2"></i>Student name extraction</li>
+                                        <li class="mb-2"><i class="fas fa-school text-info me-2"></i>Education center/school name</li>
+                                        <li class="mb-2"><i class="fas fa-id-badge text-warning me-2"></i>Roll number identification</li>
+                                        <li class="mb-2"><i class="fas fa-search text-primary me-2"></i>Format type detection</li>
+                                        <li class="mb-2"><i class="fas fa-sort-numeric-up text-danger me-2"></i>Variable column sizes (2-5 numbers)</li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Enhanced Capabilities -->
+                                <div class="alert alert-secondary mb-3">
+                                    <h6 class="text-dark mb-2"><i class="fas fa-star me-2"></i>Enhanced Capabilities:</h6>
+                                    <div class="row small">
+                                        <div class="col-6">
+                                            <i class="fas fa-check text-success me-1"></i>Up to 5-digit numbers<br>
+                                            <i class="fas fa-check text-success me-1"></i>Negative number support<br>
+                                            <i class="fas fa-check text-success me-1"></i>Handwriting recognition
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="fas fa-check text-success me-1"></i>Center name detection<br>
+                                            <i class="fas fa-check text-success me-1"></i>Multiple formats<br>
+                                            <i class="fas fa-check text-success me-1"></i>Smart grouping
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <strong>Processing Time:</strong> Enhanced analysis with student info extraction may take 2-4 minutes depending on worksheet complexity.
+                                </div>
+                                
+                                <div class="mt-auto">
+                                    <button type="button" class="btn btn-success btn-lg w-100" id="analyzeBtn">
+                                        <i class="fas fa-play me-2"></i>Start Enhanced Analysis
+                                    </button>
+                                    
+                                    <div class="mt-3 text-center">
+                                        <a href="{% url 'upload_image' %}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-arrow-left me-2"></i>Upload Different Image
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Section (Hidden initially) -->
+                <div id="progressSection" class="mt-4 d-none">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-spinner fa-spin me-2"></i>Enhanced Processing...</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress mb-3">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" id="progressBar"></div>
+                            </div>
+                            <p class="text-center mb-2" id="progressText">Initializing enhanced AI analysis...</p>
+                            <small class="text-muted d-block text-center" id="progressSubtext">Starting comprehensive worksheet analysis</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error Section (Hidden initially) -->
+                <div id="errorSection" class="mt-4 d-none">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Error:</strong> <span id="errorMessage"></span>
+                        <hr>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="location.reload()">
+                                <i class="fas fa-redo me-1"></i>Try Again
+                            </button>
+                            <a href="{% url 'upload_image' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-upload me-1"></i>Upload New Image
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Success Section (Hidden initially) -->
+                <div id="successSection" class="mt-4 d-none">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Analysis Complete!</strong> <span id="successMessage"></span>
+                        <div class="mt-2">
+                            <div id="extractedInfo"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const progressSection = document.getElementById('progressSection');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const progressSubtext = document.getElementById('progressSubtext');
+    const errorSection = document.getElementById('errorSection');
+    const errorMessage = document.getElementById('errorMessage');
+    const successSection = document.getElementById('successSection');
+    const successMessage = document.getElementById('successMessage');
+    const extractedInfo = document.getElementById('extractedInfo');
+    
+    const processingSteps = [
+        {
+            text: "Connecting to enhanced Gemini AI...",
+            subtext: "Establishing secure connection with advanced OCR"
+        },
+        {
+            text: "Extracting student information...",
+            subtext: "Looking for student name and roll number"
+        },
+        {
+            text: "Detecting center/school name...",
+            subtext: "Identifying education institution"
+        },
+        {
+            text: "Determining worksheet format...",
+            subtext: "Classifying as sections, problems, or numbered columns"
+        },
+        {
+            text: "Processing mathematical content...",
+            subtext: "Reading numbers and handwritten answers"
+        },
+        {
+            text: "Handling variable column sizes...",
+            subtext: "Processing 2-5 numbers per column"
+        },
+        {
+            text: "Calculating sums and verification...",
+            subtext: "Performing mathematical operations"
+        },
+        {
+            text: "Comparing with handwritten answers...",
+            subtext: "Checking accuracy for each problem"
+        },
+        {
+            text: "Finalizing comprehensive results...",
+            subtext: "Preparing detailed analysis report"
+        }
+    ];
+    
+    analyzeBtn.addEventListener('click', function() {
+        startAnalysis();
+    });
+    
+    function startAnalysis() {
+        // Hide other sections
+        errorSection.classList.add('d-none');
+        successSection.classList.add('d-none');
+        
+        // Show progress section
+        progressSection.classList.remove('d-none');
+        
+        // Disable analyze button
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        
+        // Start progress animation
+        let step = 0;
+        const progressInterval = setInterval(() => {
+            if (step < processingSteps.length) {
+                const progress = ((step + 1) / processingSteps.length) * 85;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = processingSteps[step].text;
+                progressSubtext.textContent = processingSteps[step].subtext;
+                step++;
+            } else {
+                progressText.textContent = "Waiting for enhanced AI response...";
+                progressSubtext.textContent = "Complex worksheet processing in progress";
+            }
+        }, 7000); // Slower for comprehensive analysis
+        
+        // Make AJAX request to process image
+        fetch('{% url "analyze_image" image.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            clearInterval(progressInterval);
+            
+            if (data.success) {
+                // Complete progress
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Enhanced analysis complete!';
+                
+                // Show extracted information
+                let infoHtml = '';
+                if (data.student_name) {
+                    infoHtml += `<small class="text-success d-block"><i class="fas fa-user me-1"></i>Student: ${data.student_name}</small>`;
+                }
+                if (data.center_name) {
+                    infoHtml += `<small class="text-info d-block"><i class="fas fa-school me-1"></i>Center: ${data.center_name}</small>`;
+                }
+                if (data.image_type) {
+                    const typeText = data.image_type === 'NUMBERED_COLUMNS' ? 'Numbered Columns Format' :
+                                   data.image_type === 'INDIVIDUAL_PROBLEMS' ? 'Individual Problems Format' : 
+                                   data.image_type === 'SECTION_TABLE' ? 'Section Table Format' : 'Unknown Format';
+                    infoHtml += `<small class="text-warning d-block"><i class="fas fa-file-alt me-1"></i>Format: ${typeText}</small>`;
+                }
+                infoHtml += `<small class="text-primary d-block"><i class="fas fa-layer-group me-1"></i>Sections: ${data.sections_count}</small>`;
+                
+                extractedInfo.innerHTML = infoHtml;
+                progressSubtext.textContent = `Successfully processed with full extraction`;
+                
+                // Show success message
+                successSection.classList.remove('d-none');
+                successMessage.textContent = `Enhanced analysis completed successfully!`;
+                
+                // Redirect to results
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 3000);
+            } else {
+                showError(data.error);
+            }
+        })
+        .catch(error => {
+            clearInterval(progressInterval);
+            console.error('Enhanced analysis error:', error);
+            showError('Network error during enhanced processing. Please check your connection and try again.');
+        });
+    }
+    
+    function showError(message) {
+        progressSection.classList.add('d-none');
+        errorSection.classList.remove('d-none');
+        errorMessage.textContent = message;
+        
+        // Re-enable analyze button
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '<i class="fas fa-play me-2"></i>Start Enhanced Analysis';
+    }
+    
+    // Add hover effects to format cards
+    const formatCards = document.querySelectorAll('.card.border-success, .card.border-warning, .card.border-info');
+    formatCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.transition = 'transform 0.3s ease';
+            this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+</script>
+
+<!-- Add CSRF token -->
+{% csrf_token %}
+
+<style>
+/* Enhanced styling */
+.alert-secondary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #6c757d;
+}
+
+.card.border-success:hover, .card.border-warning:hover, .card.border-info:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #007bff, #28a745, #17a2b8);
+    animation: gradient-shift 4s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(45deg); }
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(45deg, #218838, #1fa386);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(40, 167, 69, 0.3);
+}
+
+.list-unstyled li {
+    transition: all 0.3s ease;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.list-unstyled li:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: translateX(5px);
+}
+
+/* Format cards styling */
+.card.border-success, .card.border-warning, .card.border-info {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.fa-2x {
+    opacity: 0.8;
+}
+</style>
+{% endblock %}

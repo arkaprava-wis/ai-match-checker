@@ -1,0 +1,202 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+  <div class="ps-3">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Users</a></li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {% if edit_user %}Edit User{% else %}Add User{% endif %}
+        </li>
+      </ol>
+    </nav>
+  </div>
+  <div class="ms-auto"></div>
+</div>
+<!--end breadcrumb-->
+
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="card-title my-1">
+      {% if edit_user %}Edit User{% else %}Add New User{% endif %}
+    </h5>
+  </div>
+  <div class="card-body">
+    <form id="user-form">
+      {% if edit_user %}
+      <input type="hidden" id="user_id" value="{{ edit_user.id }}">
+      {% endif %}
+      
+      <div class="row g-3">
+        <div class="col-12 col-lg-4">
+          <label class="form-label required">First Name</label>
+          <input type="text" id="first_name" class="form-control" placeholder="First Name" required value="{% if edit_user %}{{ edit_user.first_name }}{% endif %}">
+        </div>
+        <div class="col-12 col-lg-4">
+          <label class="form-label required">Last Name</label>
+          <input type="text" id="last_name" class="form-control" placeholder="Last Name" required value="{% if edit_user %}{{ edit_user.last_name }}{% endif %}">
+        </div>
+        <div class="col-12 col-lg-4">
+          <label class="form-label required">Select Role</label>
+          <select id="role" class="form-select">
+            {% for r in roles %}
+              <option value="{{ r.name }}" {% if edit_user and r.name in edit_user.groups.all.0.name %}selected{% endif %}>
+                {{ r.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- New row with Username, Email, Designation, Mobile Number -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label required">Username</label>
+          <input type="text" id="username" class="form-control" placeholder="Username" required value="{% if edit_user %}{{ edit_user.username }}{% endif %}">
+        </div>
+        <div class="col-12 col-lg-3">
+          <label class="form-label required">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="Email Address" required value="{% if edit_user %}{{ edit_user.email }}{% endif %}">
+        </div>
+        <div class="col-12 col-lg-3">
+          <label class="form-label">Designation</label>
+          <input type="text" id="designation" class="form-control" placeholder="Designation" value="{% if edit_user %}{{ edit_user.designation }}{% endif %}">
+        </div>
+        <div class="col-12 col-lg-3">
+          <label class="form-label">Mobile Number</label>
+          <input type="text" id="mobile" name="mobile" class="form-control" placeholder="Mobile Number" value="{% if edit_user %}{{ edit_user.mobile_number }}{% endif %}">
+        </div>
+        
+        <!-- Password Fields -->
+        <div class="col-12 col-lg-6">
+          <label class="form-label required">Password</label>
+          <div class="input-group">
+            <input type="password" id="password" class="form-control" placeholder="Password" required>
+            <span class="input-group-text" id="togglePassword" style="cursor: pointer;"><i class="bi bi-eye"></i></span>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <label class="form-label required">Confirm Password</label>
+          <div class="input-group">
+            <input type="password" id="confirm_password" class="form-control" placeholder="Confirm Password" required>
+            <span class="input-group-text" id="toggleConfirmPassword" style="cursor: pointer;"><i class="bi bi-eye"></i></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-footer mt-4">
+        <div class="d-flex justify-content-end">
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-danger px-4" onclick="window.location.href='{% url 'users' %}'">
+              Cancel<i class="bx bx-right-arrow-alt ms-2"></i>
+            </button>
+            <button type="submit" class="btn btn-primary px-4">
+              Add<i class="bx bx-right-arrow-alt ms-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).ready(function(){
+    // Toggle password visibility
+    $('#togglePassword').on('click', function() {
+      let passwordInput = $('#password');
+      let type = passwordInput.attr('type') === 'password' ? 'text' : 'password';
+      passwordInput.attr('type', type);
+      $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+    });
+
+    $('#toggleConfirmPassword').on('click', function() {
+      let confirmInput = $('#confirm_password');
+      let type = confirmInput.attr('type') === 'password' ? 'text' : 'password';
+      confirmInput.attr('type', type);
+      $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+    });
+
+    $('#user-form').on('submit', function(e){
+        e.preventDefault();
+
+        const password = $('#password').val();
+        const confirm_password = $('#confirm_password').val();
+        if(password !== confirm_password) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Passwords do not match!'
+            });
+            return;
+        }
+
+        const userData = {
+            first_name: $('#first_name').val(),
+            last_name:  $('#last_name').val(),
+            username:   $('#username').val(),
+            email:      $('#email').val(),
+            role:       $('#role').val(),
+            designation: $('#designation').val(),
+            mobile:     $('#mobile').val(),
+            password:   password,
+            confirm_password: confirm_password
+        };
+
+        const userId = $('#user_id').val() || null;
+        let ajaxUrl = '{% url "ajax_add_user" %}';
+        if(userId) {
+            ajaxUrl = '/core/ajax/edit-user/' + userId + '/';
+        }
+
+        $.ajax({
+            url: ajaxUrl,
+            method: 'POST',
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            data: JSON.stringify(userData),
+            contentType: "application/json",
+            success: function(response){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                }).then(() => {
+                    if(response.redirect_url){
+                        window.location.href = response.redirect_url;
+                    } else {
+                        $('#user-form')[0].reset();
+                    }
+                });
+            },
+            error: function(xhr){
+                var err = xhr.responseJSON ? xhr.responseJSON.error : 'Error saving user';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err,
+                });
+            }
+        });
+    });
+});
+
+// Optional: Limit mobile input to digits only.
+document.addEventListener("DOMContentLoaded", function() {
+  var mobileInputs = document.querySelectorAll("input[name='mobile'], input[name='alternate_mobile']");
+  mobileInputs.forEach(function(input) {
+    input.addEventListener("input", function() {
+      let digits = this.value.replace(/\D/g, '');
+      if (digits.length > 10) {
+        digits = digits.substring(0, 10);
+      }
+      this.value = digits;
+    });
+  });
+});
+</script>
+{% endblock extra_script %}

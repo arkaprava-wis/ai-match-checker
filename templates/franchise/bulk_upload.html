@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+    <div class="ps-3">
+      <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Franchise</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto">
+    </div>
+</div>
+<div class="card mt-4">
+    <div class="card-header">
+      <div class="d-flex align-items-start justify-content-between mb-3">
+        <div class="">
+          <h5 class="mb-0">Franchise Import</h5>
+        </div>
+      </div>
+  
+     
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label for="file">Select Excel File:</label>
+      <input type="file" name="file" id="file" accept=".xlsx">
+      <button type="submit"  class="btn btn-danger px-4">Upload</button>
+  </form>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        
+        <div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  
+{% endblock content %}

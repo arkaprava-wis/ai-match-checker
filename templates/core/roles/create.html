@@ -1,0 +1,170 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+  <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+      <div class="ps-3">
+        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="#">Roles</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="ms-auto">
+      </div>
+  </div>
+  <!--end breadcrumb-->
+
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="card-title my-1">{{ title }}</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12 col-lg-4">
+          <label class="form-label required">Role Name</label>
+          <!-- Render the role name field from the form -->
+          {{ form.name }}
+        </div>
+      </div>
+
+      <div class="table-responsive mt-3">
+        <table class="table align-middle mb-0 table-striped">
+          <thead>
+            <tr>
+              <th>
+                <input class="form-check-input" type="checkbox" id="select_all" onchange="toggleAll(this)">
+              </th>
+              <th>
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  Apps
+                  <i class="material-icons-outlined text-secondary">swap_vert</i>
+                </div>
+              </th>
+              <th>
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  Models
+                  <i class="material-icons-outlined text-secondary">swap_vert</i>
+                </div>
+              </th>
+              <th class="text-end">Permissions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ct in content_types %}
+            <tr>
+              <td>
+                <!-- When this checkbox is checked, enable permissions in this row -->
+                <input class="form-check-input" type="checkbox" id="select_{{ ct.pk }}" onchange="toggleRow(this, 'permissions_{{ ct.pk }}')">
+              </td>
+              <td>{{ ct.app_label|title }}</td>
+              <td>{{ ct.model|title }}</td>
+              <td>
+                <div class="d-flex justify-content-end gap-2" id="permissions_{{ ct.pk }}">
+                  {% for perm in ct.permission_set.all %}
+                  <div class="form-check">
+                    <!-- Add disabled attribute so these are initially disabled -->
+                    <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm.pk }}" id="perm_{{ perm.pk }}"
+                      {% if perm in current_permissions %} checked {% endif %} disabled>
+                      <label class="form-check-label" for="perm_{{ perm.pk }}">
+                        {% if perm.codename == 'add_purchaseorderitem' %}
+                          Add
+                        {% elif perm.codename == 'add_per_price' %}
+                          Add Unit Price
+                        {% elif perm.codename == 'add_sell_price' %}
+                          Add Sell Price
+                        {% elif perm.codename == 'view_quantity_dependent' %}
+                          Can view Quantity dependent
+                        {% elif 'view_' in perm.codename %}
+                          View
+                        {% elif 'change_' in perm.codename %}
+                          Change
+                        {% elif 'delete_' in perm.codename %}
+                          Delete
+                        {% else %}
+                          {{ perm.name }}
+                        {% endif %}
+                      </label>
+                      
+                  </div>
+                  {% endfor %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="d-flex justify-content-end">
+        <div class="d-flex gap-2">
+          <a href="{{ cancel_url }}" class="btn btn-danger px-4">
+            Cancel<i class="bx bx-right-arrow-alt ms-2"></i>
+          </a>
+          
+          <button type="submit" class="btn btn-primary px-4">
+            Add<i class="bx bx-right-arrow-alt ms-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+
+  function toggleAll(source) {
+    const allCheckboxes = document.querySelectorAll('input[name="permissions"]');
+    allCheckboxes.forEach(cb => {
+      cb.checked = source.checked;
+  
+      cb.disabled = !source.checked;
+    });
+  }
+
+
+  function toggleRow(source, containerId) {
+    const container = document.getElementById(containerId);
+    if (container) {
+      const checkboxes = container.querySelectorAll('input[name="permissions"]');
+
+      checkboxes.forEach(cb => {
+        cb.disabled = !source.checked;
+    
+        if (!source.checked) {
+          cb.checked = false;
+        }
+      });
+    }
+  }
+</script>
+<script>
+  // Toggle all permission checkboxes in the table based on the "select_all" checkbox.
+  function toggleAll(source) {
+    const allCheckboxes = document.querySelectorAll('input[name="permissions"]');
+    allCheckboxes.forEach(cb => {
+      cb.checked = source.checked;
+      cb.disabled = !source.checked;
+    });
+  }
+
+  // Toggle the permission checkboxes for a specific content type row.
+  function toggleRow(source, containerId) {
+    const container = document.getElementById(containerId);
+    if (container) {
+      const checkboxes = container.querySelectorAll('input[name="permissions"]');
+      // When the row checkbox is checked, select and enable all permissions;
+      // otherwise, unselect and disable them.
+      checkboxes.forEach(cb => {
+        cb.checked = source.checked;
+        cb.disabled = !source.checked;
+      });
+    }
+  }
+</script>
+{% endblock content %}

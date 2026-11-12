@@ -1,0 +1,1383 @@
+
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<style>
+    /* =========================================
+       MAIN DASHBOARD
+    ========================================= */
+
+    .evaluation-dashboard {
+        padding: 20px 8px;
+        color: #172554;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .breadcrumb-text {
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .breadcrumb-text a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+
+    .dashboard-panel {
+        background: #fff;
+        border: 1px solid #dce4f1;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(15, 23, 42, .045);
+        overflow: hidden;
+        height: 100%;
+    }
+
+    /* =========================================
+       THREE-COLUMN DASHBOARD
+    ========================================= */
+
+    .evaluation-columns {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 32fr)
+            minmax(0, 32fr)
+            minmax(0, 36fr);
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .dashboard-column {
+        min-width: 0;
+    }
+
+    .photo-panel {
+        min-height: 690px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .results-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 690px;
+    }
+
+    /* =========================================
+       STUDENT SUMMARY
+    ========================================= */
+
+    .student-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 20px;
+        margin: 22px 0;
+    }
+
+    .student-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .student-avatar {
+        width: 65px;
+        height: 65px;
+        border-radius: 12px;
+        background: #e8f0ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+        flex-shrink: 0;
+    }
+
+    .student-details p {
+        margin: 4px 0;
+        color: #334155;
+        font-size: 14px;
+    }
+
+    .student-details strong {
+        color: #111827;
+        font-size: 16px;
+    }
+
+    .statistics-container {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(110px, 1fr));
+        gap: 12px;
+        flex: 1.6;
+    }
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        min-height: 72px;
+    }
+
+    .stat-card i {
+        font-size: 23px;
+    }
+
+    .stat-number {
+        font-size: 25px;
+        line-height: 1.2;
+        font-weight: 700;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .stat-ok {
+        background: #e2f7e9;
+        color: #15803d;
+    }
+
+    .stat-review {
+        background: #fff3d6;
+        color: #b45309;
+    }
+
+    .stat-total {
+        background: #e8efff;
+        color: #1d4ed8;
+    }
+
+    .stat-score {
+        background: #f5f3ff;
+        color: #6d28d9;
+    }
+
+    /* =========================================
+       PAPER HEADING
+    ========================================= */
+
+    .paper-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 25px 0 15px;
+    }
+
+    .paper-heading h4 {
+        font-size: 19px;
+        font-weight: 700;
+        margin: 0;
+        color: #111827;
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    .paper-range {
+        background: #e8f0ff;
+        color: #1d4ed8;
+        padding: 7px 12px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* =========================================
+       PANEL HEADINGS
+    ========================================= */
+
+    .panel-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #111827;
+        font-size: 16px;
+        font-weight: 700;
+        min-height: 65px;
+        flex-shrink: 0;
+    }
+
+    .panel-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e8f0ff;
+        color: #2563eb;
+        font-size: 17px;
+        flex-shrink: 0;
+    }
+
+    .panel-count {
+        margin-left: auto;
+        padding: 5px 9px;
+        background: #edf2fa;
+        color: #334155;
+        border-radius: 7px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    /* =========================================
+       MANUAL EDIT / SAVE CONTROLS
+    ========================================= */
+
+    .results-heading-title {
+        min-width: 0;
+    }
+
+    .manual-edit-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .manual-edit-actions .btn {
+        font-size: 12px;
+        padding: 5px 10px;
+        white-space: nowrap;
+    }
+
+    .manual-edit-actions .btn:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }
+
+    /* =========================================
+       ORIGINAL AND ANNOTATED PHOTO VIEWERS
+    ========================================= */
+
+    .worksheet-viewer {
+        background: #fff;
+        padding: 10px;
+        height: 610px;
+        min-height: 610px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .worksheet-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: center;
+        cursor: zoom-in;
+        border: 1px solid #e2e8f0;
+        border-radius: 5px;
+        background: #fff;
+    }
+
+    .image-caption {
+        padding: 0 14px 14px;
+        text-align: center;
+        color: #64748b;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    .empty-viewer {
+        min-height: 610px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .empty-viewer i {
+        font-size: 38px;
+        margin-bottom: 12px;
+    }
+
+    /* =========================================
+       QUESTION-WISE DETECTION RESULTS
+    ========================================= */
+
+    .results-table-wrapper {
+        padding: 10px;
+        flex: 1;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .results-table-scroll {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        overflow: visible;
+        border-radius: 8px;
+    }
+
+    .results-table {
+        width: 100%;
+        height: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        border: 1px solid #d7dfeb;
+        font-size: 12px;
+    }
+
+    .results-table thead th {
+        background: #edf2fa;
+        color: #172554;
+        padding: 6px 5px;
+        font-weight: 700;
+        border-bottom: 1px solid #cbd5e1;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    /* Five-column table widths */
+    .results-table thead th:nth-child(1) {
+        width: 10%;
+    }
+
+    .results-table thead th:nth-child(2) {
+        width: 20%;
+        text-align: center;
+    }
+
+    .results-table thead th:nth-child(3) {
+        width: 22%;
+        text-align: center;
+    }
+
+    .results-table thead th:nth-child(4) {
+        width: 13%;
+        text-align: center;
+    }
+
+    .results-table thead th:nth-child(5) {
+        width: 35%;
+        text-align: right;
+    }
+
+    .results-table tbody td {
+        padding: 3px 5px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+        vertical-align: middle;
+        line-height: 1.2;
+    }
+
+    .results-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .results-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .results-table tbody td:nth-child(2),
+    .results-table tbody td:nth-child(3),
+    .results-table tbody td:nth-child(4) {
+        text-align: center;
+    }
+
+    .option-badge {
+        display: inline-block;
+        min-width: 28px;
+        padding: 2px 7px;
+        border-radius: 5px;
+        background: #dcfce7;
+        color: #166534;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .blank-badge {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    /* Correct option from the exam's answer key */
+    .correct-badge {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    /* Score toggle: switches between 0 and the question's points */
+    .score-toggle {
+        display: inline-block;
+        min-width: 42px;
+        padding: 3px 10px;
+        border: 1px solid #d1d9e6;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #94a3b8;
+        font-weight: 700;
+        font-size: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .score-toggle:hover {
+        border-color: #94a3b8;
+    }
+
+    .score-toggle.awarded {
+        background: #dcfce7;
+        border-color: #86efac;
+        color: #166534;
+    }
+
+    .status-ok {
+        color: #15803d;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-review {
+        display: inline-block;
+        color: #b91c1c;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        border-radius: 5px;
+        padding: 3px 6px;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* =========================================
+       IMAGE PREVIEW LIGHTBOX
+    ========================================= */
+
+    .image-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(15, 23, 42, .90);
+        align-items: center;
+        justify-content: center;
+        padding: 25px;
+    }
+
+    .image-lightbox.show {
+        display: flex;
+    }
+
+    .image-lightbox img {
+        max-width: 95%;
+        max-height: 90vh;
+        object-fit: contain;
+        background: #fff;
+        border-radius: 7px;
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        border: none;
+        background: transparent;
+        color: white;
+        font-size: 36px;
+        cursor: pointer;
+    }
+
+    /* =========================================
+       RESPONSIVE LAYOUT
+    ========================================= */
+
+    @media (max-width: 991px) {
+
+        .statistics-container {
+            flex-basis: 100%;
+        }
+
+        .evaluation-columns {
+            grid-template-columns: 1fr;
+        }
+
+        .photo-panel,
+        .results-panel {
+            min-height: auto;
+        }
+
+        .worksheet-viewer {
+            height: 620px;
+            min-height: 620px;
+        }
+
+        .empty-viewer {
+            min-height: 350px;
+        }
+
+        .results-table-scroll {
+            height: auto;
+            max-height: none;
+            overflow: visible;
+        }
+    }
+
+    @media (max-width: 575px) {
+
+        .page-title {
+            font-size: 23px;
+        }
+
+        .student-summary {
+            padding: 14px;
+        }
+
+        .statistics-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .worksheet-viewer {
+            height: 480px;
+            min-height: 480px;
+        }
+
+        .empty-viewer {
+            min-height: 280px;
+        }
+
+        .results-table {
+            font-size: 11px;
+        }
+
+        .results-table thead th {
+            padding: 6px 3px;
+            font-size: 10px;
+        }
+
+        .results-table tbody td {
+            padding: 5px 3px;
+        }
+
+        .status-review {
+            font-size: 9px;
+            padding: 3px 4px;
+        }
+
+        .panel-heading {
+            flex-wrap: wrap;
+        }
+
+        .results-heading-title {
+            flex: 1;
+        }
+
+        .manual-edit-actions {
+            width: 100%;
+            justify-content: flex-end;
+            gap: 4px;
+        }
+
+        .manual-edit-actions .btn {
+            font-size: 11px;
+            padding: 4px 7px;
+        }
+    }
+
+</style>
+
+<div class="container-fluid evaluation-dashboard">
+
+    <!-- =========================================
+         PAGE HEADER
+    ========================================= -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+        <div>
+            <h2 class="page-title">Evaluate Student</h2>
+
+            <div class="breadcrumb-text">
+                <a href="{% url 'student_list' %}">Students</a>
+                <i class="fas fa-chevron-right mx-2"></i>
+                Evaluate
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+            {% if exam %}
+
+                <a href="{% url 'exam_detail' exam.id %}"
+                   class="btn btn-outline-primary">
+                    <i class="bx bx-arrow-back"></i>
+                    Back to Exam Details
+                </a>
+
+            {% else %}
+
+                <a href="{% url 'student_list' %}"
+                   class="btn btn-outline-primary">
+                    <i class="bx bx-arrow-back"></i>
+                    Back to Students
+                </a>
+
+            {% endif %}
+
+            <form method="POST"
+                  action="{% url 'check_student_photos' student_code %}">
+                {% csrf_token %}
+                {% if exam %}
+                    <input type="hidden" name="exam" value="{{ exam.id }}">
+                {% endif %}
+
+                <button type="submit"
+                        class="btn btn-primary"
+                        {% if not photos %}disabled{% endif %}>
+                    <i class="fas fa-sync-alt mr-1"></i>
+                    Check
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- =========================================
+         DJANGO MESSAGES
+    ========================================= -->
+
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
+    <!-- =========================================
+         STUDENT SUMMARY
+    ========================================= -->
+
+    <div class="dashboard-panel student-summary">
+
+        <div class="student-profile">
+
+            <div class="student-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="student-details">
+
+                <p>
+                    Student Name:
+                    <strong>{{ student_name|default:"Unknown" }}</strong>
+                </p>
+
+                <p>
+                    Student Code:
+                    <strong>{{ student_code }}</strong>
+                </p>
+
+                {% if latest_evaluation %}
+                    <small class="text-muted">
+                        Last evaluated:
+                        {{ latest_evaluation.created_at|date:"d M Y, h:i A" }}
+                    </small>
+                {% endif %}
+
+            </div>
+        </div>
+
+
+        <!-- Overall Statistics -->
+        <div class="statistics-container">
+
+            <div class="stat-card stat-score">
+                <i class="bx bx-trophy"></i>
+                <div>
+                    <div class="stat-number">{{ total_score }}</div>
+                    <div class="stat-label">Score</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-ok">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <div class="stat-number">{{ ok_count }}</div>
+                    <div class="stat-label">OK</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-review">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <div class="stat-number">{{ review_count }}</div>
+                    <div class="stat-label">Review</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-total">
+                <i class="fas fa-list-ul"></i>
+                <div>
+                    <div class="stat-number">{{ total_questions }}</div>
+                    <div class="stat-label">Total Questions</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- =========================================
+         EVALUATION STATUS
+    ========================================= -->
+
+    {% if latest_evaluation %}
+
+        {% if latest_evaluation.status == "COMPLETED" %}
+
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle mr-1"></i>
+                Evaluation completed successfully.
+            </div>
+
+        {% elif latest_evaluation.status == "FAILED" %}
+
+            <div class="alert alert-danger">
+                <strong>Evaluation failed:</strong>
+                {{ latest_evaluation.error_message }}
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-info">
+                Evaluation status:
+                <strong>{{ latest_evaluation.status }}</strong>
+            </div>
+
+        {% endif %}
+
+    {% endif %}
+
+
+    {% if not photos %}
+
+        <div class="alert alert-warning">
+            No photos uploaded for this student yet.
+            Please upload worksheet photos before running evaluation.
+        </div>
+
+    {% else %}
+
+
+        {% for photo in photos %}
+
+        <!-- =========================================
+             PER-PAPER HEADING
+             (all uploaded papers are shown at once)
+        ========================================= -->
+
+        <div class="paper-heading">
+
+            <h4>
+                <i class="bx bx-file"></i>
+                {% if photo.paper_name %}
+                    {{ photo.paper_name }}
+                {% else %}
+                    Paper {{ photo.paper_number }}
+                {% endif %}
+            </h4>
+
+            <span class="paper-range">
+                Paper {{ photo.paper_number }} of {{ photos|length }}
+                ·
+                Questions {{ photo.question_start }}–{{ photo.question_end }}
+            </span>
+
+        </div>
+
+
+        <!-- =========================================
+             THREE-COLUMN DASHBOARD
+        ========================================= -->
+
+        <div class="evaluation-columns">
+
+
+            <!-- =====================================
+                 UPLOADED PHOTO
+            ====================================== -->
+
+            <div class="dashboard-column">
+
+                <div class="dashboard-panel photo-panel">
+
+                    <div class="panel-heading">
+
+                        <span class="panel-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </span>
+
+                        Uploaded Photo
+
+                        <span class="panel-count">
+                            Paper {{ photo.paper_number }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="worksheet-viewer">
+
+                        <img src="{{ photo.image.url }}"
+                             class="worksheet-image preview-image"
+                             data-image="{{ photo.image.url }}"
+                             alt="Original worksheet paper {{ photo.paper_number }}">
+
+                    </div>
+
+                    <div class="image-caption">
+                        Original Paper {{ photo.paper_number }}
+                        <br>
+                        {{ photo.uploaded_at|date:"d M Y, h:i A" }}
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- =====================================
+                 ANNOTATED PHOTO
+            ====================================== -->
+
+            <div class="dashboard-column">
+
+                <div class="dashboard-panel photo-panel">
+
+                    <div class="panel-heading">
+
+                        <span class="panel-icon">
+                            <i class="fas fa-crop-alt"></i>
+                        </span>
+
+                        Annotated Photo
+
+                        <span class="panel-count">
+                            Paper {{ photo.paper_number }}
+                        </span>
+
+                    </div>
+
+
+                    {% if photo.evaluation_page %}
+
+                        <div class="worksheet-viewer">
+
+                            <img src="{{ photo.evaluation_page.annotated_image.url }}"
+                                 class="worksheet-image preview-image"
+                                 data-image="{{ photo.evaluation_page.annotated_image.url }}"
+                                 alt="Annotated worksheet paper {{ photo.paper_number }}">
+
+                        </div>
+
+                        <div class="image-caption">
+                            Annotated Paper {{ photo.paper_number }}
+                            <br>
+                            {{ photo.results|length }} questions detected
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty-viewer">
+                            <i class="fas fa-image"></i>
+                            <p>Annotated photo will appear after evaluation.</p>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+
+            <!-- =====================================
+                 QUESTION-WISE DETECTION RESULTS
+            ====================================== -->
+
+            <div class="dashboard-column">
+
+                <div class="dashboard-panel results-panel">
+
+                    <div class="panel-heading">
+
+                        <span class="panel-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </span>
+
+                        <span class="results-heading-title">
+                            Question-wise Detection Results
+                        </span>
+
+                        {% if photo.evaluation_page %}
+
+                            <div class="manual-edit-actions">
+
+                                <button type="button"
+                                        class="btn btn-primary save-manual-results">
+                                    <i class="fas fa-save mr-1"></i>
+                                    Save
+                                </button>
+
+                            </div>
+
+                        {% else %}
+
+                            <span class="panel-count">
+                                {{ photo.results|length }} Questions
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if photo.evaluation_page %}
+
+                        <div class="results-table-wrapper">
+
+                            <div class="results-table-scroll">
+
+                                <table class="results-table manual-results-table"
+                                       data-page-id="{{ photo.evaluation_page.id }}"
+                                       data-save-url="{% url 'save_manual_question_results' student_code %}">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Q. No.</th>
+                                            <th class="text-center">Selected</th>
+                                            <th class="text-center">Correct</th>
+                                            <th class="text-center">Score</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for result in photo.results %}
+
+                                            <tr data-question-number="{{ result.question_number }}"
+                                                data-correct-option="{{ result.display_correct }}">
+
+                                                <!-- Question Number -->
+                                                <td>
+                                                    <strong>
+                                                        {{ result.question_number }}
+                                                    </strong>
+                                                </td>
+
+                                                <!-- Automatically detected Selected Option -->
+                                                <td class="text-center">
+
+                                                    {% if result.ticked_option %}
+
+                                                        <span class="option-badge">
+                                                            {{ result.ticked_option }}
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="option-badge blank-badge">
+                                                            Blank
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                                <!-- Correct Option:
+                                                     from the exam's answer
+                                                     key for this question
+                                                     number (a manually saved
+                                                     option wins) -->
+                                                <td class="text-center">
+
+                                                    {% if result.display_correct %}
+
+                                                        <span class="option-badge correct-badge">
+                                                            {{ result.display_correct }}
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="option-badge blank-badge">
+                                                            —
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                                <!-- Score:
+                                                     toggle button - click to
+                                                     switch between 0 and the
+                                                     question's points -->
+                                                <td class="text-center">
+
+                                                    {% if result.has_award_points %}
+
+                                                        <button type="button"
+                                                                class="score-toggle{% if result.score_awarded %} awarded{% endif %}"
+                                                                data-points="{{ result.award_points }}"
+                                                                aria-label="Score for question {{ result.question_number }}">
+                                                            {% if result.score_awarded %}
+                                                                {{ result.award_points }}
+                                                            {% else %}
+                                                                0
+                                                            {% endif %}
+                                                        </button>
+
+                                                    {% else %}
+
+                                                        <span class="option-badge blank-badge">
+                                                            —
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                                <!-- Existing detector Status -->
+                                                <td>
+
+                                                    {% if result.status == "OK" %}
+
+                                                        <span class="status-ok">
+                                                            <i class="fas fa-check-circle mr-1"></i>
+                                                            OK
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="status-review">
+                                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                            {{ result.status|default:"Unknown" }}
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+                                                <td colspan="5"
+                                                    class="text-center text-muted py-4">
+                                                    No questions detected for this paper.
+                                                </td>
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty-viewer">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>
+                                Detection results will appear here after evaluation.
+                            </p>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+        <!-- CSRF token for the manual results AJAX save (shared by all papers) -->
+        <input type="hidden"
+               id="manualResultsCsrfToken"
+               value="{{ csrf_token }}">
+
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- =========================================
+     IMAGE PREVIEW LIGHTBOX
+========================================= -->
+
+<div class="image-lightbox" id="imageLightbox">
+
+    <button type="button"
+            class="lightbox-close"
+            id="closeLightbox"
+            aria-label="Close image preview">
+        &times;
+    </button>
+
+    <img id="lightboxImage" src="" alt="Image preview">
+
+</div>
+
+
+<!-- =========================================
+     JAVASCRIPT
+========================================= -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* =========================================
+       IMAGE LIGHTBOX
+    ========================================= */
+
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const closeButton = document.getElementById('closeLightbox');
+
+    document.querySelectorAll('.preview-image').forEach(function (image) {
+
+        image.addEventListener('click', function () {
+
+            lightboxImage.src = this.dataset.image;
+            lightbox.classList.add('show');
+
+        });
+
+    });
+
+    function closeLightbox() {
+
+        lightbox.classList.remove('show');
+        lightboxImage.src = '';
+
+    }
+
+    if (closeButton && lightbox) {
+
+        closeButton.addEventListener('click', closeLightbox);
+
+        lightbox.addEventListener('click', function (event) {
+
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+
+        });
+
+        document.addEventListener('keydown', function (event) {
+
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+
+        });
+
+    }
+
+
+    /* =========================================
+       ANSWER KEY SCORE TOGGLES AND SAVE
+       (correct option is a badge from the answer
+        key; the score is a 0 <-> points toggle)
+    ========================================= */
+
+    const manualCsrfInput = document.getElementById(
+        'manualResultsCsrfToken'
+    );
+
+    // Every uploaded paper has its own results table and Save button -
+    // wire each one up independently.
+    document.querySelectorAll(
+        'table.manual-results-table'
+    ).forEach(function (resultsTable) {
+
+        const panel = resultsTable.closest('.dashboard-panel');
+
+        const saveButton = panel
+            ? panel.querySelector('.save-manual-results')
+            : null;
+
+        if (!saveButton || !manualCsrfInput) {
+            return;
+        }
+
+
+        // Toggle a question's score between 0 and its points.
+        resultsTable.querySelectorAll('.score-toggle').forEach(
+            function (toggle) {
+
+                toggle.addEventListener('click', function () {
+
+                    const points = toggle.dataset.points;
+                    const awarded = toggle.classList.toggle('awarded');
+
+                    toggle.textContent = awarded ? points : '0';
+
+                });
+
+            }
+        );
+
+
+        // Save the toggled scores for this paper.
+        saveButton.addEventListener('click', async function () {
+
+            const rows = resultsTable.querySelectorAll(
+                'tbody tr[data-question-number]'
+            );
+
+            const submittedResults = [];
+
+            for (const row of rows) {
+
+                const toggle = row.querySelector('.score-toggle');
+
+                if (!toggle) {
+                    continue;
+                }
+
+                submittedResults.push({
+
+                    question_number: Number(row.dataset.questionNumber),
+
+                    correct_option: row.dataset.correctOption || null,
+
+                    score: toggle.classList.contains('awarded')
+                        ? Number(toggle.dataset.points)
+                        : 0
+
+                });
+
+            }
+
+
+            const pageId = resultsTable.dataset.pageId;
+            const saveUrl = resultsTable.dataset.saveUrl;
+
+            if (!pageId || !saveUrl) {
+
+                alert('The evaluation page information is missing.');
+                return;
+
+            }
+
+
+            saveButton.disabled = true;
+
+            saveButton.innerHTML =
+                '<i class="fas fa-spinner fa-spin mr-1"></i> Saving...';
+
+
+            try {
+
+                const response = await fetch(saveUrl, {
+
+                    method: 'POST',
+
+                    credentials: 'same-origin',
+
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': manualCsrfInput.value
+                    },
+
+                    body: JSON.stringify({
+
+                        page_id: Number(pageId),
+
+                        results: submittedResults
+
+                    })
+
+                });
+
+
+                const data = await response.json();
+
+
+                if (!response.ok || !data.success) {
+
+                    throw new Error(
+                        data.message || 'Unable to save manual results.'
+                    );
+
+                }
+
+
+                alert(
+                    data.message || 'Manual results saved successfully.'
+                );
+
+
+            } catch (error) {
+
+                console.error('Manual Save Error:', error);
+
+                alert(
+                    error.message ||
+                    'An error occurred while saving manual results.'
+                );
+
+
+            } finally {
+
+                saveButton.disabled = false;
+
+                saveButton.innerHTML =
+                    '<i class="fas fa-save mr-1"></i> Save';
+
+            }
+
+        });
+
+    });
+
+
+});
+</script>
+
+{% endblock %}

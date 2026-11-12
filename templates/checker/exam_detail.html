@@ -1,0 +1,106 @@
+{% extends 'base/base.html' %}
+
+{% block extrahead %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Exam Details Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ exam.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-calendar"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Date</small>
+                                        <h6 class="mb-0">{{ exam.exam_date|date:"F d, Y" }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-layer"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Level</small>
+                                        <h6 class="mb-0">{{ exam.get_level_display }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-map"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Location</small>
+                                        <h6 class="mb-0">{{ exam.place }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 mb-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-primary fs-3">
+                        <i class="bx bx-group"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Students Assigned</small>
+                        <h3 class="mb-0 fw-bold">{{ assigned_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 mb-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="me-3 text-success fs-3">
+                        <i class="bx bx-check-circle"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Students Appeared</small>
+                        <h3 class="mb-0 fw-bold">{{ appeared_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Students Section (assignment management lives on the
+         manage-students page; this page shows status + upload/evaluate) -->
+    <div class="row">
+        <div class="col-12">
+            {% include 'checker/partials/assigned_students_table.html' with show_actions=True show_status=True show_remove=False show_filters=True %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+{% include 'checker/partials/franchise_toggle_script.html' %}
+{% include 'checker/partials/table_filters_script.html' %}
+{% endblock %}

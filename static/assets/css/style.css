@@ -1,0 +1,175 @@
+#salary-table thead tr th{
+    min-width: 200px;
+    white-space:no-wrap
+}
+
+.table-pending {
+    background-color: #efe8c7 !important;  /* Light red */
+    color: #721c24 !important;
+  }
+  
+  /* Use a light green background for delivered orders */
+  .table-delivered {
+    background-color: #f0f6f8 !important;  /* Light green */
+    color: #155724 !important;
+  }
+
+  .sale-orders-table tr:not(:last-child) {
+    border-bottom: 1px solid #171616;
+  }
+  .fs-17{
+    font-size: 17px;
+  }
+
+
+
+  /* new  */
+  .sidenav-toggled .sidebar-wrapper {
+    width: 71px;
+}
+.sidenav-toggled .main-wrapper {
+  margin-left: 71px;
+}
+/* .sidenav-toggled .sidebar-wrapper .sidebar-header{
+  width: 71px;
+} */
+/* .sidenav-toggled .top-header .navbar {
+  left: 71px;
+} */
+
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #e67d09;
+  --bs-btn-border-color: #e67d09;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #fecc00;
+  --bs-btn-hover-border-color: #ffcc00;
+  --bs-btn-focus-shadow-rgb: 49, 132, 253;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #ffcc00;
+  --bs-btn-active-border-color: #fecc00;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #e67d09;
+  --bs-btn-disabled-border-color: #e67d09;
+}
+.btn-outline-primary {
+  --bs-btn-color: #e67d09;
+  --bs-btn-border-color: #e67d09;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #e67d09;
+  --bs-btn-hover-border-color: #e67d09;
+  --bs-btn-focus-shadow-rgb: 13, 110, 253;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #e67d09;
+  --bs-btn-active-border-color: #e67d09;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #e67d09;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: #e67d09;
+  --bs-gradient: none;
+}
+.active>.page-link, .page-link.active {
+  color: var(--bs-pagination-active-color);
+  background-color: #e67d09;
+  border-color: #ffcc00
+}
+a, .page-link{
+  color: #e67d09;
+}
+.form-label {
+  font-weight: 600;
+}
+.main-content .card {
+  padding-top: 1rem;
+}
+a.btn.btn-link {
+    color: #15c90f;
+}
+
+table thead {
+  background: #ffcc00;
+}
+table thead th {
+  font-weight: 600;
+  font-size: 16px;
+  padding: 0.8rem 0.5rem !important;
+}
+.select2-container .select2-selection--single{
+  height: 38px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+  line-height: 34px !important;
+}
+.form-control::placeholder{
+  font-size: 14px !important;
+}
+.form-control{
+  font-size: 14px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  top: 6px !important;
+  right: 3px !important;
+}
+.select2-container--default .select2-selection--single{
+  border: 1px solid #dee2e6 !important;
+  border-radius: 0.375rem !important;
+}
+#order-items tbody .form-control {
+  font-size: 14px !important;
+  max-width: 150px;
+  margin-left: auto;
+}
+table thead th:last-child, table tbody td:last-child, table tbody td:last-child input {
+  text-align: right !important;
+}
+table tbody tr td {
+  vertical-align: middle !important;
+}
+.text-primary {
+  color: rgb(239 124 0) !important;
+}
+.bg-primary {
+  background-color: rgb(254 236 217) !important;
+}
+.detail-info p {
+  word-break: break-all;
+}
+
+
+@media only screen and (max-width: 1199px) {
+  .sidenav-toggled .sidebar-wrapper {
+      left: 0;
+  }
+  .h5, h5 {
+    font-size: 1.1rem;
+}
+table thead th {
+  font-size: 15px;
+}
+.card .card-header .d-flex.justify-content-between.mb-3 {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.main-wrapper .main-content {
+  padding: 0.5rem !important;
+}
+.profile-info.d-flex.align-items-center.justify-content-between {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.profile-avatar img {
+  height: 80px;
+  width: auto;
+  margin-bottom: 0.5rem;
+}
+.d-flex.align-items-center.gap-2.mob-btn {
+  flex-wrap: wrap;
+}
+}
+.user-name {
+  white-space: normal;
+}
+.main-wrapper{
+  min-height: calc(100vh - 50px);
+}

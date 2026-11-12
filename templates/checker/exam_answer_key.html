@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Answer Key: {{ exam.name }}</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Choose the correct answer and points for all {{ exam.number_of_questions }} questions.</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-6 mb-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 35%;">Question Number</th>
+                                        <th style="width: 40%;">Answer</th>
+                                        <th style="width: 25%;">Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in left_rows %}
+                                        <tr>
+                                            <td class="fw-semibold">Question {{ row.number }}</td>
+                                            <td>
+                                                {{ row.answer_field }}
+                                                {% for error in row.answer_field.errors %}
+                                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {{ row.points_field }}
+                                                {% for error in row.points_field.errors %}
+                                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 35%;">Question Number</th>
+                                        <th style="width: 40%;">Answer</th>
+                                        <th style="width: 25%;">Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in right_rows %}
+                                        <tr>
+                                            <td class="fw-semibold">Question {{ row.number }}</td>
+                                            <td>
+                                                {{ row.answer_field }}
+                                                {% for error in row.answer_field.errors %}
+                                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {{ row.points_field }}
+                                                {% for error in row.points_field.errors %}
+                                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Answer Key</button>
+                <a href="{% url 'exam_list' %}" class="btn btn-outline-secondary">Back to Exam</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

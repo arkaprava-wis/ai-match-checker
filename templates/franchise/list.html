@@ -1,0 +1,239 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+    <div class="ps-3">
+      <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Franchise</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto">
+    </div>
+</div>
+<!--end breadcrumb-->
+
+<div class="card mt-4">
+  <div class="card-header">
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div class="">
+        <h5 class="mb-0">Franchise List</h5>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <form method="get" class="d-flex align-items-center gap-2">
+          Show
+          <select name="page_size" class="form-select" onchange="this.form.submit()">
+            <option value="10" {% if page_obj.paginator.per_page == 10 %}selected{% endif %}>10</option>
+            <option value="25" {% if page_obj.paginator.per_page == 25 %}selected{% endif %}>25</option>
+            <option value="50" {% if page_obj.paginator.per_page == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if page_obj.paginator.per_page == 100 %}selected{% endif %}>100</option>
+          </select>
+          entries
+        </form>
+      </div>
+      <div class="position-relative">
+        <input name="q" id="search-input" class="form-control px-5" type="search"
+        placeholder="Search by Franchise, owner, gst_no" value="{{ search_query }}">
+        <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">
+          search
+        </span>
+      </div>
+      <div class="d-flex align-items-center gap-2 btn btn-primary px-4  ">
+        <h6 class="mb-0 text-white">Total Students: {{ total_students }}</h6>
+      </div>
+      <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+        <!-- <a href="% url 'bulk_upload_franchise' %}" class="btn btn-filter px-4">
+          <i class="bi bi-upload me-2"></i>Import
+        </a> -->
+        <!-- <a href="% url 'export_franchises' %}" class="btn btn-filter px-4">
+          <i class="bi bi-download me-2"></i>Export
+        </a> -->
+        <a href="{% url 'franchise_add' %}" class="btn btn-primary px-4">
+          <i class="bi bi-plus-circle me-2"></i>Add Franchise
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive table-scroll">
+      <table class="table align-middle mb-0 table-striped">
+        <thead>
+          <tr>
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Franchise
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Phone
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Owner
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Location
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Students
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Due
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <!-- New Supervisor column -->
+            <th>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                Supervisor
+                <i class="material-icons-outlined text-secondary">swap_vert</i>
+              </div>
+            </th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for supplier in franchises %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div class="product-box">
+                  {% if supplier.image %}
+                    <img src="{{ supplier.image.url }}" width="55" class="rounded-3" alt="{{ supplier.name }}">
+                  {% else %}
+                    <img src="{% static 'assets/images/avatars/01.png' %}" width="55" class="rounded-3" alt="{{ supplier.name }}">
+                  {% endif %}
+                </div>
+                <div class="product-info">
+                  <a href="#" class="product-title">{{ supplier.name }}</a>
+                  <p class="mb-0 product-category">{{ supplier.franchise_location|default:"—" }}</p>
+                </div>
+              </div>
+            </td>
+            <td>{{ supplier.mobile }}</td>
+            <td>{{ supplier.owner }}</td>
+            <td>{{ supplier.franchise_location|default:"—" }}</td>
+
+            <td>{{ supplier.no_of_students }}</td>
+            <td>{{ supplier.total_due_amount }}</td>
+            <!-- Supervisor column: show assigned supervisor or Unassigned -->
+            <td>
+              {% if supplier.supervision_assignment and supplier.supervision_assignment.supervisor %}
+                {{ supplier.supervision_assignment.supervisor.full_name }}
+              {% else %}
+                Unassigned
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="dropdown">
+                <a href="javascript:;" class="dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+                  <span class="material-icons-outlined fs-5">more_vert</span>
+                </a>
+                  <ul class="dropdown-menu">
+                      <li>
+                          <span class="dropdown-item text-muted">View unavailable</span>
+                      </li>
+                      <li>
+                          <span class="dropdown-item text-muted">Edit unavailable</span>
+                      </li>
+                      <li>
+                          <span class="dropdown-item text-muted">Delete unavailable</span>
+                      </li>
+                  </ul>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8">No suppliers found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+      </div>
+      <div>
+        <ul class="pagination mb-0">
+          {% if is_paginated %}
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_obj.paginator.per_page }}">
+                  Previous
+                </a>
+              </li>
+            {% endif %}
+            {% for page in page_range %}
+              <li class="page-item {% if page == page_obj.number %}active{% endif %}">
+                <a class="page-link" href="?page={{ page }}&page_size={{ page_obj.paginator.per_page }}">
+                  {{ page }}
+                </a>
+              </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_obj.paginator.per_page }}">
+                  Next
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+  // Set the franchise id in the modal hidden input when an assign button is clicked
+  $('.assign-user-btn').click(function(){
+  var franchiseId = $(this).data('franchise-id');
+  var supervisorId = $(this).data('supervisor-id') || '';
+  $('#modal-franchise-id').val(franchiseId);
+  // The select field will have id "id_supervisor" by default.
+  $('#id_supervisor').val(supervisorId);
+});
+
+  $('#search-input').on('input', function(){
+    var query = $(this).val();
+    $.ajax({
+      url: window.location.pathname,  // using current page URL
+      data: { q: query, page_size: '{{ page_obj.paginator.per_page }}' },
+      success: function(data){
+        // Replace the tbody content with the updated HTML from the response
+        var newBody = $(data).find('tbody').html();
+        $('tbody').html(newBody);
+      }
+    });
+  });
+});
+</script>
+{% endblock extra_script %}

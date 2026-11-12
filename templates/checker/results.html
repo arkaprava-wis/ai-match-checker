@@ -1,0 +1,612 @@
+{% extends 'checker/base.html' %}
+{% load static %}
+
+{% block title %}Results - {{ image.student_name|default:"Math Checker" }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <!-- Enhanced Student and Center Info -->
+        <div class="card shadow-sm mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-user-circle fa-4x text-primary mb-2"></i>
+                    <h4 class="fw-bold text-primary">{{ image.student_name|default:"Unknown Student" }}</h4>
+                    {% if image.roll_number %}
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-id-badge me-1"></i>
+                            Roll: {{ image.roll_number }}
+                        </p>
+                    {% endif %}
+                </div>
+                
+                {% if image.center_name %}
+                <div class="bg-light rounded p-3 mb-3">
+                    <div class="text-center">
+                        <i class="fas fa-school text-success mb-2"></i>
+                        <h6 class="fw-bold mb-1">Education Center</h6>
+                        <p class="text-muted mb-0 small">{{ image.center_name }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="row text-center small">
+                    <div class="col-6">
+                        <i class="fas fa-file-alt text-info me-1"></i>
+                        <strong>Format:</strong><br>
+                        <span class="badge bg-{% if image.image_type == 'NUMBERED_COLUMNS' %}info{% elif image.image_type == 'INDIVIDUAL_PROBLEMS' %}warning{% elif image.image_type == 'SECTION_TABLE' %}success{% else %}secondary{% endif %}">
+                            {{ image.get_image_type_display }}
+                        </span>
+                    </div>
+                    <div class="col-6">
+                        <i class="fas fa-clock text-info me-1"></i>
+                        <strong>Processed:</strong><br>
+                        {{ image.uploaded_at|date:"M d, Y" }}<br>
+                        <small>{{ image.uploaded_at|date:"H:i" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-image me-2"></i>Original Worksheet</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ image.image.url }}" class="img-fluid rounded shadow" alt="Uploaded worksheet" style="max-height: 300px;">
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-layer-group me-1"></i>
+                        {{ total_sections }} section{{ total_sections|pluralize }} processed
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Performance Summary with Unanswered -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Overall Performance</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-3">
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <h4 class="fw-bold">{{ correct_answers }}</h4>
+                            <small class="text-muted">Correct</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-danger">
+                            <i class="fas fa-times-circle fa-2x mb-2"></i>
+                            <h4 class="fw-bold">{{ wrong_answers }}</h4>
+                            <small class="text-muted">Wrong</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-warning">
+                            <i class="fas fa-question-circle fa-2x mb-2"></i>
+                            <h4 class="fw-bold">{{ unanswered }}</h4>
+                            <small class="text-muted">Unanswered</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-info">
+                            <i class="fas fa-percentage fa-2x mb-2"></i>
+                            <h4 class="fw-bold">{{ overall_accuracy }}%</h4>
+                            <small class="text-muted">Accuracy</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Progress Bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Problems Status</small>
+                        <small class="text-muted">{{ answered_problems }}/{{ total_columns }} answered</small>
+                    </div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {% widthratio correct_answers total_columns 100 %}%"
+                             title="Correct: {{ correct_answers }}">
+                        </div>
+                        <div class="progress-bar bg-danger" role="progressbar" 
+                             style="width: {% widthratio wrong_answers total_columns 100 %}%"
+                             title="Wrong: {{ wrong_answers }}">
+                        </div>
+                        <div class="progress-bar bg-warning" role="progressbar" 
+                             style="width: {% widthratio unanswered total_columns 100 %}%"
+                             title="Unanswered: {{ unanswered }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    {% if overall_accuracy >= 90 %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-trophy me-1"></i>Excellent Work!
+                        </span>
+                    {% elif overall_accuracy >= 70 %}
+                        <span class="badge bg-primary fs-6">
+                            <i class="fas fa-thumbs-up me-1"></i>Good Job!
+                        </span>
+                    {% elif unanswered > 0 %}
+                        <span class="badge bg-warning fs-6">
+                            <i class="fas fa-edit me-1"></i>Complete Remaining Problems
+                        </span>
+                    {% else %}
+                        <span class="badge bg-info fs-6">
+                            <i class="fas fa-book me-1"></i>Keep Practicing!
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <!-- Section Performance Summary -->
+                <h6 class="text-primary mb-3">
+                    <i class="fas fa-list-ol me-1"></i>
+                    {% if image.image_type == 'NUMBERED_COLUMNS' %}
+                        Column Groups Performance:
+                    {% elif image.image_type == 'INDIVIDUAL_PROBLEMS' %}
+                        Problem Groups Performance:
+                    {% else %}
+                        Section Performance:
+                    {% endif %}
+                </h6>
+                {% for section_data in sections_with_results %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold">{{ section_data.section.section_name }}</span>
+                    <div>
+                        <span class="badge bg-{% if section_data.section.accuracy >= 80 %}success{% elif section_data.section.accuracy >= 60 %}primary{% else %}warning{% endif %}">
+                            {{ section_data.section.accuracy }}%
+                        </span>
+                        {% if section_data.section.unanswered_count > 0 %}
+                            <span class="badge bg-warning ms-1">{{ section_data.section.unanswered_count }} unanswered</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'download_results' image.id %}" class="btn btn-outline-success">
+                        <i class="fas fa-download me-2"></i>Download Complete Results (CSV)
+                    </a>
+                    <a href="{% url 'upload_image' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Check Another Worksheet
+                    </a>
+                    <a href="{% url 'results_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>All Results
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Processing Info -->
+        <div class="card shadow-sm mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Fixed Processing Features</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <i class="fas fa-check me-1 text-success"></i>Column headers correctly excluded<br>
+                    <i class="fas fa-check me-1 text-success"></i>Variable column numbers (2-10+)<br>
+                    <i class="fas fa-check me-1 text-success"></i>Unanswered problem detection<br>
+                    <i class="fas fa-check me-1 text-success"></i>Enhanced handwriting recognition<br>
+                    <i class="fas fa-check me-1 text-success"></i>Student & center auto-extraction
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- Section-wise Results with Enhanced Layout -->
+        <div class="accordion" id="sectionsAccordion">
+            {% for section_data in sections_with_results %}
+            <div class="accordion-item mb-3 shadow-sm">
+                <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" 
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                            aria-controls="collapse{{ forloop.counter }}">
+                        <div class="w-100 d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong class="me-3">
+                                    {% if image.image_type == 'NUMBERED_COLUMNS' %}
+                                        <i class="fas fa-th me-2"></i>{{ section_data.section.section_name }}
+                                    {% elif image.image_type == 'INDIVIDUAL_PROBLEMS' %}
+                                        <i class="fas fa-list-ol me-2"></i>{{ section_data.section.section_name }}
+                                    {% else %}
+                                        <i class="fas fa-table me-2"></i>{{ section_data.section.section_name }}
+                                    {% endif %}
+                                </strong>
+                                <small class="text-muted">
+                                    {{ section_data.results.count }} problems
+                                </small>
+                            </div>
+                            <div class="me-4">
+                                <span class="badge bg-{% if section_data.section.accuracy >= 80 %}success{% elif section_data.section.accuracy >= 60 %}primary{% else %}warning{% endif %} fs-6">
+                                    {{ section_data.section.accuracy }}% Accuracy
+                                </span>
+                                {% if section_data.section.unanswered_count > 0 %}
+                                    <span class="badge bg-warning ms-1">{{ section_data.section.unanswered_count }} unanswered</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                     aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#sectionsAccordion">
+                    <div class="accordion-body p-0">
+                        <!-- Section Statistics -->
+                        <div class="bg-light p-3 border-bottom">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <small class="text-muted d-block">Correct</small>
+                                    <span class="fw-bold text-success">{{ section_data.section.correct_answers }}</span>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted d-block">Wrong</small>
+                                    <span class="fw-bold text-danger">{{ section_data.section.wrong_answers }}</span>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted d-block">Unanswered</small>
+                                    <span class="fw-bold text-warning">{{ section_data.section.unanswered_count }}</span>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted d-block">Total</small>
+                                    <span class="fw-bold">{{ section_data.results.count }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Results Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-center" width="8%">
+                                            {% if image.image_type == 'NUMBERED_COLUMNS' %}Column{% elif image.image_type == 'INDIVIDUAL_PROBLEMS' %}Problem{% else %}Column{% endif %}
+                                        </th>
+                                        <th class="text-center" width="25%">Numbers</th>
+                                        <th class="text-center" width="15%">Expression</th>
+                                        <th class="text-center" width="12%">Sum</th>
+                                        <th class="text-center" width="12%">Answer</th>
+                                        <th class="text-center" width="8%">Diff</th>
+                                        <th class="text-center" width="20%">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in section_data.results %}
+                                    <tr class="{% if result.status == 'Right' %}table-success{% elif result.status == 'Wrong' %}table-danger{% else %}table-warning{% endif %}">
+                                        <td class="text-center">
+                                            {% if result.problem_identifier %}
+                                                <span class="badge bg-primary fs-6">{{ result.problem_identifier }}</span>
+                                            {% else %}
+                                                <span class="fw-bold fs-5">{{ result.column_number }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="numbers-container">
+                                                {% for num in result.extracted_numbers %}
+                                                    <span class="badge bg-secondary me-1 mb-1 number-badge" 
+                                                          title="Value: {{ num }}">
+                                                        {% if num < 0 %}
+                                                            <i class="fas fa-minus me-1"></i>{{ num|add:"0"|floatformat:"0" }}
+
+                                                        {% else %}
+                                                            {{ num }}
+                                                        {% endif %}
+                                                    </span>
+                                                    {% if not forloop.last and forloop.counter0|divisibleby:4 %}<br>{% endif %}
+                                                {% endfor %}
+                                                <div class="mt-1">
+                                                    <small class="text-muted">{{ result.numbers_count }} number{{ result.numbers_count|pluralize }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <small class="text-primary">{{ result.display_expression|default:"N/A" }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="fs-4 calculated-sum" title="Sum of all numbers">
+                                                {% if result.calculated_sum < 0 %}
+                                                    <span class="text-danger">{{ result.calculated_sum }}</span>
+                                                {% else %}
+                                                    <span class="text-primary">{{ result.calculated_sum }}</span>
+                                                {% endif %}
+                                            </strong>
+                                        </td>
+                                        <td class="text-center">
+                                            {% if result.given_answer is not None %}
+                                                <strong class="fs-4 given-answer" title="Handwritten answer">
+                                                    {% if result.given_answer < 0 %}
+                                                        <span class="text-danger">{{ result.given_answer }}</span>
+                                                    {% else %}
+                                                        <span class="text-info">{{ result.given_answer }}</span>
+                                                    {% endif %}
+                                                </strong>
+                                            {% else %}
+                                                <span class="text-muted fst-italic">Not answered</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if result.difference is not None %}
+                                                <span class="diff-value fw-bold">
+                                                    {% if result.difference == 0 %}
+                                                        <span class="text-success">0</span>
+                                                    {% elif result.difference > 0 %}
+                                                        <span class="text-danger">+{{ result.difference }}</span>
+                                                    {% else %}
+                                                        <span class="text-info">{{ result.difference }}</span>
+                                                    {% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if result.status == 'Right' %}
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-check me-1"></i>Right
+                                                </span>
+                                            {% elif result.status == 'Wrong' %}
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-times me-1"></i>Wrong
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning fs-6">
+                                                    <i class="fas fa-question me-1"></i>Unanswered
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fas fa-info-circle text-muted me-2"></i>
+                                            No results found for this section.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                    <h4>No Results Found</h4>
+                    <p class="text-muted">Please analyze the image first to see results.</p>
+                    <a href="{% url 'analyze_image' image.id %}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Analyze Image
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Enhanced Performance Insights -->
+        {% if sections_with_results %}
+        <div class="card shadow-sm mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Performance Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Student Summary:</h6>
+                        <div class="bg-light rounded p-3 mb-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Name</small>
+                                    <strong>{{ image.student_name|default:"Unknown" }}</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Center</small>
+                                    <strong>{{ image.center_name|default:"N/A"|truncatechars:15 }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Performance Grade:</h6>
+                        <div class="text-center">
+                            <div class="display-4 fw-bold 
+                                {% if overall_accuracy >= 90 %}text-success
+                                {% elif overall_accuracy >= 80 %}text-primary
+                                {% elif overall_accuracy >= 70 %}text-warning
+                                {% elif overall_accuracy >= 60 %}text-info
+                                {% else %}text-danger{% endif %}">
+                                {% if overall_accuracy >= 90 %}A+
+                                {% elif overall_accuracy >= 85 %}A
+                                {% elif overall_accuracy >= 80 %}B+
+                                {% elif overall_accuracy >= 75 %}B
+                                {% elif overall_accuracy >= 70 %}C+
+                                {% elif overall_accuracy >= 65 %}C
+                                {% elif overall_accuracy >= 60 %}D
+                                {% else %}F{% endif %}
+                            </div>
+                            <small class="text-muted">Based on {{ overall_accuracy }}% accuracy of answered questions</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Detailed Analysis -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-success">Best Sections:</h6>
+                        {% for section_data in sections_with_results %}
+                            {% if section_data.section.accuracy >= 80 %}
+                                <span class="badge bg-success me-1 mb-1">{{ section_data.section.section_name }}</span>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <h6 class="text-warning mt-3">Needs Practice:</h6>
+                        {% for section_data in sections_with_results %}
+                            {% if section_data.section.accuracy < 60 and section_data.section.accuracy > 0 %}
+                                <span class="badge bg-warning me-1 mb-1">{{ section_data.section.section_name }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-info">Completion Status:</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            <div class="progress-bar bg-success" style="width: {% widthratio answered_problems total_columns 100 %}%">
+                                Answered
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ answered_problems }}/{{ total_columns }} problems completed</small>
+                        
+                        {% if unanswered > 0 %}
+                        <div class="alert alert-warning mt-2 py-2">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ unanswered }} problem{{ unanswered|pluralize }} still need{{ unanswered|pluralize:"s," }} answers
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-info">Worksheet Statistics:</h6>
+                        <small class="text-muted">
+                            <i class="fas fa-calculator me-1"></i>Total Problems: {{ total_columns }}<br>
+                            <i class="fas fa-check me-1"></i>Answered: {{ answered_problems }}<br>
+                            <i class="fas fa-question me-1"></i>Unanswered: {{ unanswered }}<br>
+                            <i class="fas fa-layer-group me-1"></i>Sections: {{ total_sections }}<br>
+                            <i class="fas fa-cogs me-1"></i>Format: {{ image.get_image_type_display|default:"Unknown" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced hover effects for number badges
+    const numberBadges = document.querySelectorAll('.number-badge');
+    numberBadges.forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        badge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Animate cards on load
+    const cards = document.querySelectorAll('.card, .accordion-item');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+    
+    // Enhanced row hover effects
+    const resultRows = document.querySelectorAll('tbody tr');
+    resultRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.005)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+
+<style>
+/* Enhanced styling for fixed results */
+.number-badge {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    min-width: 30px;
+    padding: 3px 6px;
+}
+
+.numbers-container {
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.calculated-sum, .given-answer {
+    font-family: 'Courier New', monospace;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.diff-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1em;
+}
+
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.card.border-primary {
+    border-width: 2px !important;
+}
+
+.fa-user-circle {
+    color: #007bff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e7f3ff;
+    border-color: #b6d7ff;
+}
+
+/* Table row colors for different statuses */
+.table tbody tr.table-warning {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+.progress-bar {
+    transition: width 0.5s ease;
+}
+
+@media (max-width: 768px) {
+    .number-badge {
+        min-width: 25px;
+        padding: 2px 4px;
+        font-size: 0.75em;
+    }
+}
+</style>
+{% endblock %}

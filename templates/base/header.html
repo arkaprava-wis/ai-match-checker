@@ -1,0 +1,128 @@
+{% load static %}
+
+
+  <!--start header-->
+  <header class="top-header">
+    <nav class="navbar navbar-expand align-items-center gap-4">
+      <div class="btn-toggle me-auto">
+        <a href="javascript:;"><i class="material-icons-outlined">menu</i></a>
+      </div>
+      <ul class="navbar-nav gap-1 nav-right-links align-items-center">
+        <li class="nav-item dropdown">
+          <a href="javascrpt:;" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+             <img src="{% static 'assets/images/avatars/01.png'%}" class="rounded-circle p-1 border" width="45" height="45" alt="">
+          </a>
+          <div class="dropdown-menu dropdown-user dropdown-menu-end shadow">
+            <a class="dropdown-item  gap-2 py-2" href="javascript:;">
+              <div class="text-center">
+                <img src="{% static 'assets/images/avatars/01.png '%}" class="rounded-circle p-1 shadow mb-3" width="90" height="90"
+                  alt="">
+                <h5 class="user-name mb-0 fw-bold">Hello, {{ user.first_name}}</h5>
+              </div>
+            </a>
+            <hr class="dropdown-divider">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+              class="material-icons-outlined">person_outline</i>Profile</a>
+            <hr class="dropdown-divider">
+            <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2" style="border:none; background:none; width:100%; text-align:left;">
+                <i class="material-icons-outlined">power_settings_new</i>Logout
+              </button>
+            </form>
+          </div>
+        </li>
+      </ul>
+
+    </nav>
+  </header>
+  <!--end top header-->
+
+  <!--start sidebar-->
+  <aside class="sidebar-wrapper" data-simplebar="true">
+    <div class="sidebar-header">
+      <div class="logo-icon">
+      </div>
+      <div class="logo-name flex-grow-1">
+        <img src="{% static 'assets/images/crosswind.png' %}" class="logo-img" alt="" style="width:200px; height:auto;">
+      </div>
+      <div class="sidebar-close">
+        <span class="material-icons-outlined">close</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <!--navigation-->
+      <ul class="metismenu" id="sidenav">
+        <li class="{% if request.resolver_match.url_name == 'home' %}mm-active{% endif %}">
+          <a href="{% url 'home' %}">
+            <div class="parent-icon">
+              <i class="material-icons-outlined">home</i>
+            </div>
+            <div class="menu-title">Dashboard</div>
+          </a>
+        </li>
+        
+       
+		       {% if perms.core.view_role %}
+            <li class="{% if request.resolver_match.url_name == 'roles' %}mm-active{% endif %}">
+              <a href="{% url 'roles' %}">
+                <div class="parent-icon">
+                  <i class="material-icons-outlined">verified_user</i>
+                </div>
+                <div class="menu-title">Roles</div>
+              </a>
+            </li>
+            {% endif %}
+		       {% if perms.core.view_user %}
+
+            <li class="{% if request.resolver_match.url_name == 'users' %}mm-active{% endif %}">
+              <a href="{% url 'users' %}">
+                <div class="parent-icon">
+                  <i class="material-icons-outlined">group</i>
+                </div>
+                <div class="menu-title">Users</div>
+              </a>
+            </li>
+            {% endif %}
+              <li class="{% if request.resolver_match.url_name == 'exam_list' or request.resolver_match.url_name == 'create_exam' or request.resolver_match.url_name == 'exam_detail' or request.resolver_match.url_name == 'upload_answer_sheet' or request.resolver_match.url_name == 'exam_results' or request.resolver_match.url_name == 'view_analysis_results' %}mm-active{% endif %}">
+
+              <a href="{% url 'exam_list' %}">
+                <div class="parent-icon">
+                  <i class="material-icons-outlined">quiz</i>
+                </div>
+                <div class="menu-title">Exam</div>
+              </a>
+            </li>
+		       {% if perms.core.view_franchise %}
+            
+            <li class="{% if request.resolver_match.url_name == 'franchise' or request.resolver_match.url_name == 'franchise_details' %} mm-active {% endif %}">
+
+              <a href="{% url 'franchise' %}">
+                <div class="parent-icon">
+                  <i class="material-icons-outlined">apartment</i>
+                </div>
+                <div class="menu-title">Franchise</div>
+              </a>
+            </li>
+            <li class="{% if request.resolver_match.url_name == 'student_list' %}mm-active{% endif %}">
+
+              <a href="{% url 'student_list' %}">
+                <div class="parent-icon">
+                  <i class="material-icons-outlined">group</i>
+                </div>
+                <div class="menu-title">Students</div>
+              </a>
+            </li>
+            {% endif %}
+		      
+            
+           
+            
+           
+          </ul>
+            
+           
+          <!--end navigation-->
+      </div>
+    </aside>
+  <!--end sidebar-->

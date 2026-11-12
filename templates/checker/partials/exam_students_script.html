@@ -1,0 +1,299 @@
+<!-- Shared script + message modal for exam student assignment pages -->
+
+<!-- Success/Error Messages Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Notification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#franchise-select').select2({
+        placeholder: 'Choose a franchise...',
+        allowClear: true,
+        width: '100%'
+    });
+
+    let currentStudents = [];
+
+    // Franchise selection change
+    $('#franchise-select').change(function() {
+        const franchiseId = $(this).val();
+        if (franchiseId) {
+            loadStudents(franchiseId);
+            $('#search-section').show();
+        } else {
+            $('#students-container').hide();
+            $('#search-section').hide();
+            $('#students-list').empty();
+        }
+    });
+
+    // Search functionality
+    $('#student-search').on('input', function() {
+        const searchTerm = $(this).val();
+        const franchiseId = $('#franchise-select').val();
+        if (franchiseId) {
+            loadStudents(franchiseId, searchTerm);
+        }
+    });
+
+    // Load students function
+    function loadStudents(franchiseId, search = '') {
+        $('#loading-indicator').show();
+        $('#students-container').hide();
+
+        $.ajax({
+            url: '{% url "get_franchise_students" %}',
+            data: {
+                'franchise_id': franchiseId,
+                'level': '{{ exam.level }}',
+                'search': search
+            },
+            success: function(response) {
+                currentStudents = response.students;
+                renderStudentsList();
+                $('#loading-indicator').hide();
+                $('#students-container').show();
+            },
+            error: function(xhr) {
+                $('#loading-indicator').hide();
+                // Show the server's API/sync error to make failed
+                // franchise selections diagnosable from this page.
+                const message = xhr.responseJSON?.message || 'Error loading students. Please try again.';
+                showMessage(message, 'error');
+            }
+        });
+    }
+
+    // Render students list
+    function renderStudentsList() {
+        const container = $('#students-list');
+        container.empty();
+
+        if (currentStudents.length === 0) {
+            container.html('<p class="text-muted text-center">No students found.</p>');
+            return;
+        }
+
+        // Table view: checkbox | Student | Code | Level | Location | Status
+        const rowsHtml = currentStudents.map(function(student) {
+            // Check if student is already assigned
+            const isAssigned = $('.exam-student-card[data-student-id="' + student.id + '"]').length > 0;
+
+            return `
+                <tr class="${isAssigned ? 'table-light' : ''}">
+                    <td class="text-center" style="width: 5%;">
+                        <input class="form-check-input student-checkbox mt-0" type="checkbox"
+                               value="${student.id}" id="student-${student.id}"
+                               ${isAssigned ? 'disabled' : ''}>
+                    </td>
+                    <td style="width: 30%;">
+                        <label class="form-check-label w-100" for="student-${student.id}">
+                            ${student.name}
+                        </label>
+                    </td>
+                    <td style="width: 22%;"><code>${student.student_code || 'N/A'}</code></td>
+                    <td style="width: 14%;">${student.level || 'N/A'}</td>
+                    <td style="width: 19%;">${student.location || 'N/A'}</td>
+                    <td class="text-center" style="width: 10%;">
+                        ${isAssigned ? '<span class="badge bg-success">Assigned</span>' : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        container.html(`
+            <table class="table table-bordered table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width: 5%;"></th>
+                        <th style="width: 30%;">Student</th>
+                        <th style="width: 22%;">Code</th>
+                        <th style="width: 14%;">Level</th>
+                        <th style="width: 19%;">Location</th>
+                        <th class="text-center" style="width: 10%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+        `);
+
+        updateSelectedCount();
+    }
+
+    // Select/Clear all functionality
+    $('#select-all-btn').click(function() {
+        $('.student-checkbox:not(:disabled)').prop('checked', true);
+        updateSelectedCount();
+    });
+
+    $('#clear-all-btn').click(function() {
+        $('.student-checkbox').prop('checked', false);
+        updateSelectedCount();
+    });
+
+    // Update selected count
+    function updateSelectedCount() {
+        const selectedCount = $('.student-checkbox:checked').length;
+        $('#selected-count').text(selectedCount + ' selected');
+    }
+
+    // Listen for checkbox changes
+    $(document).on('change', '.student-checkbox', function() {
+        updateSelectedCount();
+    });
+
+    // Assign students
+    $('#assign-students-btn').click(function() {
+        const selectedStudentIds = [];
+        $('.student-checkbox:checked').each(function() {
+            selectedStudentIds.push($(this).val());
+        });
+
+        if (selectedStudentIds.length === 0) {
+            showMessage('Please select at least one student.', 'warning');
+            return;
+        }
+
+        const btn = $(this);
+        btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Assigning...');
+
+        $.ajax({
+            url: '{% url "assign_students_to_exam" exam.id %}',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                'student_ids': selectedStudentIds
+            }),
+            success: function(response) {
+                if (response.success) {
+                    showMessage(response.message, 'success');
+                    // Refresh the page to show updated assigned students
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showMessage(response.message, 'error');
+                }
+            },
+            error: function() {
+                showMessage('Error assigning students. Please try again.', 'error');
+            },
+            complete: function() {
+                btn.prop('disabled', false).html('<i class="bx bx-plus"></i> Assign Selected Students');
+            }
+        });
+    });
+
+    // Remove student from exam
+    $(document).on('click', '.remove-student-btn', function() {
+        const studentId = $(this).data('student-id');
+        const studentName = $(this).data('student-name');
+
+        if (!confirm(`Are you sure you want to remove ${studentName} from this exam?`)) {
+            return;
+        }
+
+        const btn = $(this);
+        btn.prop('disabled', true);
+
+        $.ajax({
+            url: `/cheker/exams/{{ exam.id }}/remove-student/${studentId}/`,
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Remove the student table row
+                    $(`.exam-student-card[data-student-id="${studentId}"]`).fadeOut(300, function() {
+                        const row = $(this);
+                        const group = row.closest('tbody.franchise-group');
+                        row.remove();
+
+                        // Update the franchise group (menu) count or drop it if empty
+                        const remainingInGroup = group.find('.exam-student-card').length;
+                        if (remainingInGroup === 0) {
+                            group.remove();
+                        } else {
+                            group.find('.franchise-student-count').text(
+                                remainingInGroup + ' student' + (remainingInGroup > 1 ? 's' : '')
+                            );
+                        }
+
+                        // Update total count in the card header
+                        const newCount = $('.exam-student-card').length;
+                        $('#assigned-students-count').text(newCount);
+
+                        // Show "no students" message if needed
+                        if (newCount === 0) {
+                            $('#assigned-students-list').html(`
+                                <div class="text-center text-muted" id="no-students-message">
+                                    <p>No students assigned to this exam yet.</p>
+                                </div>
+                            `);
+                        }
+                    });
+
+                    showMessage(response.message, 'success');
+
+                    // Refresh students list to remove "Already Assigned" status
+                    const franchiseId = $('#franchise-select').val();
+                    if (franchiseId) {
+                        loadStudents(franchiseId, $('#student-search').val());
+                    }
+                } else {
+                    showMessage(response.message, 'error');
+                }
+            },
+            error: function() {
+                showMessage('Error removing student. Please try again.', 'error');
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+            }
+        });
+    });
+
+    // Show message function
+    function showMessage(message, type) {
+        const modal = $('#messageModal');
+        const modalHeader = modal.find('.modal-header');
+
+        // Reset classes
+        modalHeader.removeClass('bg-success bg-danger bg-warning');
+
+        // Add appropriate class
+        if (type === 'success') {
+            modalHeader.addClass('bg-success text-white');
+        } else if (type === 'error') {
+            modalHeader.addClass('bg-danger text-white');
+        } else if (type === 'warning') {
+            modalHeader.addClass('bg-warning text-dark');
+        }
+
+        $('#modal-message').text(message);
+        modal.modal('show');
+    }
+});
+</script>
+{% include 'checker/partials/franchise_toggle_script.html' %}

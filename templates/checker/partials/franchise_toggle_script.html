@@ -1,0 +1,28 @@
+<!-- Franchise group toggle for the Assigned Students table.
+     Uses the chevron icon as the collapse state. When the page has a
+     student filter (#student-filter), expanding a group only shows the
+     rows matching that filter. -->
+<script>
+$(document).ready(function() {
+    // Franchise menu toggle: expand/collapse the students (sub-menu) of a franchise
+    $(document).on('click', '.franchise-group-header', function() {
+        const group = $(this).closest('tbody.franchise-group');
+        const icon = $(this).find('.franchise-toggle-icon');
+
+        if (icon.hasClass('bx-chevron-right')) {
+            // Collapsed -> expand (only rows matching the student filter, if any)
+            const studentId = $('#student-filter').val();
+            group.find('tr.exam-student-card').each(function() {
+                const row = $(this);
+                const studentMatch = !studentId || String(row.data('student-id')) === String(studentId);
+                row.toggle(studentMatch);
+            });
+            icon.removeClass('bx-chevron-right').addClass('bx-chevron-down');
+        } else {
+            // Expanded -> collapse all students
+            group.find('tr.exam-student-card').hide();
+            icon.removeClass('bx-chevron-down').addClass('bx-chevron-right');
+        }
+    });
+});
+</script>

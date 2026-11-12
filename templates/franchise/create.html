@@ -1,0 +1,190 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+  <div class="ps-3">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+        <li class="breadcrumb-item" aria-current="page">Franchise</li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {% if object %}Edit Franchise{% else %}Add Franchise{% endif %}
+        </li>
+      </ol>
+    </nav>
+  </div>
+  <div class="ms-auto"></div>
+</div>
+<!--end breadcrumb-->
+
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="card-title my-1">
+      {% if object %}Edit Franchise{% else %}Add New Franchise{% endif %}
+    </h5>
+  </div>
+  <div class="card-body">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <!-- Row 1: Franchise Name & Short Name -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label required">Franchise Name</label>
+          {{ form.name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Short Name</label>
+          {{ form.short_name }}
+        </div>
+      </div>
+      
+      <!-- Row 2: Owner & Image -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-6">
+          <label class="form-label required">Owner</label>
+          {{ form.owner }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Image</label>
+          {{ form.image }}
+        </div>
+      </div>
+      
+      <!-- Row 3: Email, Mobile, Alternate Mobile, GST No -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label required">Email</label>
+          {{ form.email }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label required">Mobile</label>
+          {{ form.mobile }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label required">Alternate Mobile</label>
+          {{ form.alternate_mobile }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">GST No</label>
+          {{ form.gstid }}
+        </div>
+      </div>
+      
+      <!-- Row 4: State, District, City, Pincode -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label required">State</label>
+          {{ form.state }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label required">District</label>
+          {{ form.district }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label required">City</label>
+          {{ form.city }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label required">Pincode</label>
+          {{ form.pincode }}
+        </div>
+      </div>
+      
+      <!-- Row 5: Location & Zone -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-3">
+          <label class="form-label">Location</label>
+          {{ form.location }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Zone</label>
+          <select name="zone" id="id_zone" class="form-select">
+            <option value="">Select Zone</option>
+            <option value="A" {% if object and object.zone == "A" %}selected{% endif %}>A</option>
+            <option value="B" {% if object and object.zone == "B" %}selected{% endif %}>B</option>
+            <option value="C" {% if object and object.zone == "C" %}selected{% endif %}>C</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Assigned Supervisor</label>
+          <select name="assigned_supervisor" id="id_assigned_supervisor" class="form-select">
+             <option value="">Select Supervisor</option>
+             {% for user in users %}
+               <option value="{{ user.pk }}"
+                 {% if object and object.supervision_assignment and object.supervision_assignment.supervisor.pk == user.pk %}
+                   selected
+                 {% endif %}
+               >{{ user.full_name }}</option>
+             {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label required">No of Students</label>
+          {{ form.no_of_students }}
+        </div>
+      </div>
+      
+      <!-- Footer Buttons -->
+      <div class="card-footer mt-3">
+        <div class="d-flex justify-content-end">
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-danger px-4" onclick="window.location.href='{% url 'franchise' %}'">
+              Cancel <i class="bx bx-right-arrow-alt ms-2"></i>
+            </button>
+            <button type="submit" class="btn btn-primary px-4">
+              {% if object %}Update{% else %}Add{% endif %}
+              <i class="bx bx-right-arrow-alt ms-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- <script>
+$(document).ready(function(){
+  // When state changes, fetch districts via AJAX
+  $('#id_state').on('change', function(){
+    var stateID = $(this).val();
+    if(stateID){
+      $.ajax({
+        url: '% url "get_districts" %}',
+        data: { 'state_id': stateID },
+        success: function(data){
+          var options = '<option value="">Select District</option>';
+          $.each(data.districts, function(index, district){
+            options += '<option value="'+ district.id +'">'+ district.name +'</option>';
+          });
+          $('#id_district').html(options);
+        },
+        error: function(xhr, status, error) {
+          console.error("Error fetching districts:", error);
+        }
+      });
+    } else {
+      $('#id_district').html('<option value="">Select District</option>');
+    }
+  });
+});
+</script> -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+  var mobileInputs = document.querySelectorAll("input[name='mobile'], input[name='alternate_mobile']");
+  mobileInputs.forEach(function(input) {
+    input.addEventListener("input", function() {
+      let digits = this.value.replace(/\D/g, '');
+      if (digits.length > 10) {
+        digits = digits.substring(0, 10);
+      }
+      this.value = digits;
+    });
+  });
+});
+</script>
+{% endblock extra_script %}

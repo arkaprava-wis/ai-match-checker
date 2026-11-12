@@ -1,0 +1,48 @@
+<!-- Select2 filters (franchise / student) for the Assigned Students table.
+     Requires the filter selects from assigned_students_table.html with
+     show_filters=True, and the franchise group toggle script. -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#franchise-filter').select2({
+        placeholder: 'All Franchises',
+        allowClear: true,
+        width: '100%'
+    });
+    $('#student-filter').select2({
+        placeholder: 'All Students',
+        allowClear: true,
+        width: '100%'
+    });
+
+    function applyFilters() {
+        const franchiseId = $('#franchise-filter').val() || '';
+        const studentId = $('#student-filter').val() || '';
+
+        // Student filter: show/hide individual student rows
+        $('tr.exam-student-card').each(function() {
+            const row = $(this);
+            const studentMatch = !studentId || String(row.data('student-id')) === String(studentId);
+            row.toggle(studentMatch);
+        });
+
+        // Franchise filter: show/hide whole franchise groups, and hide
+        // groups left with no visible students by the student filter
+        $('tbody.franchise-group').each(function() {
+            const group = $(this);
+            const franchiseMatch = !franchiseId || String(group.data('franchise-id')) === String(franchiseId);
+            const hasVisibleRows = group.find('tr.exam-student-card:visible').length > 0;
+            group.toggle(franchiseMatch && (hasVisibleRows || !studentId));
+        });
+
+        // Filtering expands the visible groups - keep the icons in sync
+        $('tbody.franchise-group').each(function() {
+            if ($(this).is(':visible')) {
+                $(this).find('.franchise-toggle-icon').removeClass('bx-chevron-right').addClass('bx-chevron-down');
+            }
+        });
+    }
+
+    $('#franchise-filter, #student-filter').on('change', applyFilters);
+});
+</script>

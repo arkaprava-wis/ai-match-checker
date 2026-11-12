@@ -1,0 +1,120 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Students</h2>
+        <form method="get" class="form-inline">
+            <div class="row">
+                <div class="col-md-4">
+                    <select name="level" class="form-control">
+                        <option value="">-- Select Level --</option>
+                        {% for level in levels %}
+                            <option value="{{ level.id }}" {% if current_filters.level == level.id|stringformat:"s" %}selected{% endif %}>{{ level.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select name="franchise" class="form-control">
+                        <option value="">-- Select Franchise --</option>
+                        {% for franchise in franchises %}
+                            <option value="{{ franchise.id }}" {% if current_filters.franchise == franchise.id|stringformat:"s" %}selected{% endif %}>{{ franchise.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="search" name="search" class="form-control" placeholder="Search..." value="{{ current_filters.search }}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+               
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Franchise</th>
+                <th>Level</th>
+                <!-- <th>Actions</th> -->
+               
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in objects %}
+            <tr>
+                <td>{{ student.name }}</td>
+             
+                <td>{{ student.email }}</td>
+                <td>{{ student.phone }}</td>
+                <td>{{ student.franchise|default:"—"  }}</td>
+                <td>{{ student.level|default:"—"  }}</td>
+                <!-- <td class="text-nowrap">
+                    {% if student.student_code in uploaded_student_codes %}
+                        <button type="button"
+                                class="btn btn-sm btn-success"
+                                disabled
+                                title="Upload is available from the assigned student's exam."
+                                onclick="window.location.href='{% url 'new_upload_page' student.student_code %}?name={{ student.name|urlencode }}'">
+                            Uploaded
+                        </button>
+                    {% else %}
+                        <button type="button"
+                                class="btn btn-sm btn-primary"
+                                disabled
+                                title="Upload is available from the assigned student's exam."
+                                onclick="window.location.href='{% url 'new_upload_page' student.student_code %}?name={{ student.name|urlencode }}'">
+                            Upload
+                        </button>
+                    {% endif %}
+
+                    <button type="button"
+                            class="btn btn-sm btn-success"
+                            disabled
+                            title="Evaluation is available from the assigned student's exam."
+                            onclick="window.location.href='{% url 'evaluate_student_page' student.student_code %}?name={{ student.name|urlencode }}'">
+                        Evaluate
+                    </button>
+                </td> -->
+               
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No students found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="d-flex justify-content-end">
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&page_size={{ page_obj.paginator.per_page }}{% if current_filters.level %}&level={{ current_filters.level }}{% endif %}{% if current_filters.franchise %}&franchise={{ current_filters.franchise }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+                {% for page in page_range %}
+                <li class="page-item {% if page == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}&page_size={{ page_obj.paginator.per_page }}{% if current_filters.level %}&level={{ current_filters.level }}{% endif %}{% if current_filters.franchise %}&franchise={{ current_filters.franchise }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">{{ page }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&page_size={{ page_obj.paginator.per_page }}{% if current_filters.level %}&level={{ current_filters.level }}{% endif %}{% if current_filters.franchise %}&franchise={{ current_filters.franchise }}{% endif %}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

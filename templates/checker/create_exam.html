@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb d-flex align-items-center justify-content-between mb-4">
+        <div class="ps-3">
+            <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'exam_list' %}">Exams</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Create</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="ms-auto pe-3">
+            <a href="{% url 'exam_list' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bx bx-arrow-back"></i> Back to Exams
+            </a>
+        </div>
+    </div>
+    <!--end breadcrumb-->
+
+    <!-- Create form -->
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bx bx-plus-circle me-1"></i>Create a New Exam</h3>
+                    <small class="text-white-50">Fill out the form below to create a new exam. Students can be assigned after creation.</small>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- General form error -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">
+                                <i class="bx bx-book text-muted me-1"></i>Exam Name <strong class="text-danger">*</strong>
+                            </label>
+                            {{ form.name }}
+                            {% for error in form.name.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_exam_date" class="form-label">
+                                    <i class="bx bx-calendar text-muted me-1"></i>Exam Date <strong class="text-danger">*</strong>
+                                </label>
+                                {{ form.exam_date }}
+                                {% for error in form.exam_date.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_place" class="form-label">
+                                    <i class="bx bx-map text-muted me-1"></i>Exam Place <strong class="text-danger">*</strong>
+                                </label>
+                                {{ form.place }}
+                                {% for error in form.place.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_level" class="form-label">
+                                <i class="bx bx-layer text-muted me-1"></i>Level <strong class="text-danger">*</strong>
+                            </label>
+                            <select id="id_level" name="level" class="form-select" required>
+                                <option value="" {% if not form.level.value %}selected{% endif %} disabled>Select a level</option>
+                                <option value="1" {% if form.level.value == '1' %}selected{% endif %}>LEVEL 1</option>
+                                <option value="12" {% if form.level.value == '12' %}selected{% endif %}>LEVEL 2 (Part-I)</option>
+                                <option value="13" {% if form.level.value == '13' %}selected{% endif %}>LEVEL 2 (Part-II)</option>
+                                <option value="2" {% if form.level.value == '2' %}selected{% endif %}>LEVEL 3</option>
+                                <option value="3" {% if form.level.value == '3' %}selected{% endif %}>LEVEL 4</option>
+                                <option value="4" {% if form.level.value == '4' %}selected{% endif %}>LEVEL 5</option>
+                                <option value="5" {% if form.level.value == '5' %}selected{% endif %}>LEVEL 6</option>
+                                <option value="6" {% if form.level.value == '6' %}selected{% endif %}>LEVEL 7</option>
+                                <option value="7" {% if form.level.value == '7' %}selected{% endif %}>LEVEL 8</option>
+                                <option value="8" {% if form.level.value == '8' %}selected{% endif %}>LEVEL 9</option>
+                            </select>
+                            {% for error in form.level.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_number_of_questions" class="form-label">
+                                    <i class="bx bx-list-check text-muted me-1"></i>Number of Questions <strong class="text-danger">*</strong>
+                                </label>
+                                {{ form.number_of_questions }}
+                                {% for error in form.number_of_questions.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_number_of_pages" class="form-label">
+                                    <i class="bx bx-file text-muted me-1"></i>Number of Pages <strong class="text-danger">*</strong>
+                                </label>
+                                {{ form.number_of_pages }}
+                                {% for error in form.number_of_pages.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_remarks" class="form-label">
+                                <i class="bx bx-note text-muted me-1"></i>Remarks <span class="text-muted">(optional)</span>
+                            </label>
+                            {{ form.remarks }}
+                            {% for error in form.remarks.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'exam_list' %}" class="btn btn-outline-secondary">
+                                <i class="bx bx-x"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-plus"></i> Create Exam
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

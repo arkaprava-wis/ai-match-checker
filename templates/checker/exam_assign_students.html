@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+
+{% block extrahead %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Exam Info Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div class="text-truncate">
+                        <h3 class="mb-0 text-truncate">{{ exam.name }}</h3>
+                        <small class="text-white-50">Student Assignment</small>
+                    </div>
+                    <a href="{% url 'exam_detail' exam.id %}" class="btn btn-light btn-sm flex-shrink-0 ms-3">
+                        <i class="bx bx-arrow-back"></i> Back to Exam
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-calendar"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Date</small>
+                                        <h6 class="mb-0">{{ exam.exam_date|date:"F d, Y" }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-layer"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Level</small>
+                                        <h6 class="mb-0">{{ exam.get_level_display }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-map"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Location</small>
+                                        <h6 class="mb-0">{{ exam.place }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card border-0 shadow-sm h-100 mb-0">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3 text-primary fs-3">
+                                        <i class="bx bx-group"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Assigned Students</small>
+                                        <h6 class="mb-0">{{ exam_students.count }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Assignment Section -->
+    <div class="row mb-4" id="assign-students">
+        <div class="col-12">
+            {% include 'checker/partials/assign_students_panel.html' with hide_dedicated_link=True %}
+        </div>
+    </div>
+
+    <!-- Assigned Students Section (no Upload/Evaluate actions on this page) -->
+    <div class="row">
+        <div class="col-12">
+            {% include 'checker/partials/assigned_students_table.html' with show_actions=False show_status=False show_remove=True %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+{% include 'checker/partials/exam_students_script.html' %}
+{% endblock %}

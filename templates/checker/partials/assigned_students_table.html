@@ -1,0 +1,136 @@
+<!-- Assigned Students table (shared by exam detail and assign-students pages).
+     Pass show_actions=False to hide the Upload/Evaluate buttons.
+     Pass show_status=False to hide the Uploaded/Score columns.
+     Pass show_remove=False to hide the Remove button. -->
+<div class="card">
+    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Assigned Students (<span id="assigned-students-count">{{ exam_students.count }}</span>)</h5>
+    </div>
+    <div class="card-body">
+        {% if show_filters and exam_students %}
+            <!-- Table filters (franchise / student) -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="franchise-filter" class="form-label"><i class="bx bx-buildings text-muted me-1"></i>Franchise</label>
+                    <select id="franchise-filter" class="form-select">
+                        <option value=""></option>
+                        {% regroup exam_students by student.current_franchise as filter_franchise_groups %}
+                        {% for franchise_group in filter_franchise_groups %}
+                            {% if franchise_group.grouper %}
+                                <option value="{{ franchise_group.grouper.id }}">{{ franchise_group.grouper.name }}{% if franchise_group.grouper.franchise_code %} ({{ franchise_group.grouper.franchise_code }}){% endif %} - {{ franchise_group.grouper.location }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="student-filter" class="form-label"><i class="bx bx-user text-muted me-1"></i>Student</label>
+                    <select id="student-filter" class="form-select">
+                        <option value=""></option>
+                        {% for exam_student in exam_students %}
+                            <option value="{{ exam_student.student.id }}">{{ exam_student.student.name }}{% if exam_student.student.student_code %} ({{ exam_student.student.student_code }}){% endif %}{% if exam_student.student.current_franchise.location %} - {{ exam_student.student.current_franchise.location }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        {% endif %}
+        <div id="assigned-students-list" style="max-height: 500px; overflow-y: auto;">
+            {% if exam_students %}
+                <table class="table table-bordered table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            {% if show_status %}
+                                <th style="width: 26%;">Student</th>
+                                <th style="width: 18%;">Code</th>
+                                <th style="width: 12%;">Level</th>
+                                <th style="width: 14%;">Uploaded</th>
+                                <th style="width: 10%;">Score</th>
+                            {% else %}
+                                <th style="width: 32%;">Student</th>
+                                <th style="width: 20%;">Code</th>
+                                <th style="width: 16%;">Level</th>
+                            {% endif %}
+                            {% if show_actions or show_remove %}
+                                <th class="text-end" style="width: {% if show_status %}20{% else %}32{% endif %}%;">Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <!-- Franchise is the menu (group header), students are the sub-menu (rows) -->
+                    {% regroup exam_students by student.current_franchise as franchise_groups %}
+                    {% for franchise_group in franchise_groups %}
+                        <tbody class="franchise-group" id="franchise-group-{{ forloop.counter }}"
+                               data-franchise-id="{{ franchise_group.grouper.id }}">
+                            <tr class="franchise-group-header table-info franchise-toggle" style="cursor: pointer;"
+                                title="Click to expand/collapse students">
+                                <td colspan="{% if show_status %}{% if show_actions or show_remove %}6{% else %}5{% endif %}{% else %}{% if show_actions or show_remove %}4{% else %}3{% endif %}{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-truncate">
+                                            <i class="bx bx-chevron-down franchise-toggle-icon me-1"></i>
+                                            <strong>{{ franchise_group.grouper.name|default:"No Franchise" }}</strong>
+                                            {% if franchise_group.grouper.location %}
+                                                <span class="text-muted"> - {{ franchise_group.grouper.location }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-secondary rounded-pill ms-2 franchise-student-count flex-shrink-0">
+                                            {{ franchise_group.list|length }} student{{ franchise_group.list|length|pluralize }}
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% for exam_student in franchise_group.list %}
+                                <tr class="exam-student-card" data-student-id="{{ exam_student.student.id }}">
+                                    <td>{{ exam_student.student.name }}</td>
+                                    <td><code>{{ exam_student.student.student_code|default:"N/A" }}</code></td>
+                                    <td>{{ exam_student.student.current_level.name|default:"N/A" }}</td>
+                                    {% if show_status %}
+                                        <td>
+                                            {% if exam_student.is_uploaded %}
+                                                <span class="badge bg-success">
+                                                    <i class="bx bx-check-circle me-1"></i>Uploaded
+                                                </span>
+                                                {% if exam_student.photo_count %}
+                                                    <small class="text-muted d-block">{{ exam_student.photo_count }} photo{{ exam_student.photo_count|pluralize }}</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if exam_student.total_score is not None %}
+                                                <span class="fw-semibold">{{ exam_student.total_score }}</span>
+                                            {% else %}
+                                                <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    {% if show_actions or show_remove %}
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Student actions">
+                                                {% if show_actions and exam_student.student.student_code %}
+                                                    <a href="{% url 'new_upload_page' exam_student.student.student_code %}?name={{ exam_student.student.name|urlencode }}&exam={{ exam.id }}"
+                                                       class="btn btn-primary">Upload</a>
+                                                    <a href="{% url 'evaluate_student_page' exam_student.student.student_code %}?name={{ exam_student.student.name|urlencode }}&exam={{ exam.id }}"
+                                                       class="btn btn-success">Evaluate</a>
+                                                {% endif %}
+                                                {% if show_remove %}
+                                                    <button type="button" class="btn btn-outline-danger remove-student-btn"
+                                                            data-student-id="{{ exam_student.student.id }}"
+                                                            data-student-name="{{ exam_student.student.name }}">
+                                                        Remove
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <div class="text-center text-muted" id="no-students-message">
+                    <p>No students assigned to this exam yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

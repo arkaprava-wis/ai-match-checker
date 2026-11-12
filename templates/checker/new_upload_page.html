@@ -1,0 +1,789 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4 py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h2 class="mb-1">Upload Exam Photos</h2>
+            <p class="text-muted mb-0">Capture or upload answer sheet photos for evaluation.</p>
+        </div>
+
+        <a href="{{ back_url }}" class="btn btn-outline-secondary">
+            <i class="bx bx-arrow-back me-1"></i>{{ back_label }}
+        </a>
+    </div>
+
+    <!-- Student & Exam Information Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h4 class="mb-0">
+                <i class="bx bx-user-circle me-2"></i>{{ student_name|default:"Student" }}
+            </h4>
+            <span class="badge bg-light text-dark fs-6">
+                <i class="bx bx-hash me-1"></i>{{ student_code }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 mb-0">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3 text-primary fs-3"><i class="bx bx-file"></i></div>
+                            <div class="text-truncate">
+                                <small class="text-muted d-block">Exam</small>
+                                <h6 class="mb-0">{{ exam.name|default:"—" }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 mb-0">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3 text-primary fs-3"><i class="bx bx-calendar"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Exam Date</small>
+                                <h6 class="mb-0">{% if exam %}{{ exam.exam_date|date:"F d, Y" }}{% else %}—{% endif %}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 mb-0">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3 text-primary fs-3"><i class="bx bx-layer"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Level</small>
+                                <h6 class="mb-0">
+                                    {% if exam %}{{ exam.get_level_display }}{% elif student.current_level %}{{ student.current_level.name }}{% else %}—{% endif %}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 mb-0">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="me-3 text-primary fs-3"><i class="bx bx-map"></i></div>
+                            <div class="text-truncate">
+                                <small class="text-muted d-block">Franchise</small>
+                                <h6 class="mb-0">
+                                    {% if student.current_franchise %}
+                                        {{ student.current_franchise.name }}{% if student.current_franchise.location %} - {{ student.current_franchise.location }}{% endif %}
+                                    {% else %}—{% endif %}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Step 1: Capture or Upload -->
+        <div class="col-12 col-lg-7">
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bx bx-camera me-2"></i>Camera</h5>
+                    <span class="text-muted small">Step 1 &middot; Capture or upload</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="camera-container mb-3">
+                        <video id="camera" autoplay playsinline muted></video>
+
+                        <div id="cameraPlaceholder" class="camera-placeholder">
+                            <div class="text-center text-white">
+                                <i class="bx bx-camera-off" style="font-size: 42px;"></i>
+                                <p class="mb-0 mt-2">Camera preview will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="cameraError" class="alert alert-warning d-none" role="alert"></div>
+
+                    <!-- Camera Controls -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" id="startCamera" class="btn btn-primary">
+                            <i class="bx bx-cctv me-1"></i>Start Camera
+                        </button>
+
+                        <button type="button" id="capturePhoto" class="btn btn-success" disabled>
+                            <i class="bx bx-camera me-1"></i>Capture Photo
+                        </button>
+
+                        <button type="button" id="stopCamera" class="btn btn-outline-secondary" disabled>
+                            <i class="bx bx-x-circle me-1"></i>Stop Camera
+                        </button>
+                    </div>
+
+                    <p class="text-muted small mt-2 mb-0">
+                        Allow camera access when your browser asks for permission.
+                    </p>
+                </div>
+
+                <!-- Upload from Device -->
+                <div class="card-footer bg-white">
+                    <input type="file"
+                           id="photoFileInput"
+                           class="d-none"
+                           accept="image/jpeg,image/png,image/webp"
+                           multiple>
+
+                    <div id="dropZone" class="drop-zone text-center">
+                        <i class="bx bx-cloud-upload fs-1 d-block mb-1"></i>
+                        <p class="mb-1 fw-semibold">Drag &amp; drop photos here</p>
+                        <small class="text-muted d-block mb-2">JPG, PNG or WEBP &middot; up to 20 photos</small>
+                        <button type="button" id="uploadPhotosButton" class="btn btn-outline-primary btn-sm">
+                            <i class="bx bx-folder-open me-1"></i>Browse Files
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Step 2 + 3: Review and Submit -->
+        <div class="col-12 col-lg-5">
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bx bx-images me-2"></i>Photos to Submit</h5>
+                    <span class="badge bg-primary" id="photoCount">0 photos</span>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Success feedback (hidden until upload completes) -->
+                    <div id="uploadSuccess" class="alert alert-success d-none" role="alert">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bx bx-check-circle fs-4"></i>
+                            <span id="uploadSuccessMessage"></span>
+                        </div>
+                        <a id="evaluateLink"
+                           class="btn btn-success btn-sm mt-2"
+                           href="{% url 'evaluate_student_page' student_code %}?name={{ student_name|urlencode }}">
+                            Go to Evaluate <i class="bx bx-right-arrow-alt ms-1"></i>
+                        </a>
+                    </div>
+
+                    <div id="emptyState" class="empty-state text-center text-muted">
+                        <i class="bx bx-image-add" style="font-size: 42px;"></i>
+                        <p class="mb-0 mt-2">No photos yet.</p>
+                        <small>Capture with the camera or upload from your device.</small>
+                    </div>
+
+                    <div id="photoGallery" class="row g-3"></div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        Remove any photo you do not need. Photos are saved only when you press
+                        <strong>Submit Photos</strong>.
+                    </p>
+                </div>
+
+                <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span class="text-muted small">Step 2 &middot; Review &amp; remove</span>
+                    <button type="button" id="submitPhotos" class="btn btn-primary px-4" disabled>
+                        <i class="bx bx-upload me-1"></i>Submit Photos
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Hidden canvas used to capture a video frame -->
+<canvas id="captureCanvas" class="d-none"></canvas>
+
+<style>
+    .camera-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #202124;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #camera {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .camera-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: #202124;
+    }
+
+    .camera-placeholder.hidden {
+        display: none;
+    }
+
+    .empty-state {
+        padding: 55px 10px;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+    }
+
+    .photo-card {
+        position: relative;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .photo-preview {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: contain;
+        background: #f1f3f5;
+    }
+
+    .photo-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 4px 8px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .photo-remove {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border-radius: 50%;
+        background: rgba(220, 53, 69, 0.9);
+        border: none;
+        color: #fff;
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .drop-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 24px 12px;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .drop-zone.drag-over {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+</style>
+
+
+<script>
+(function () {
+
+    const MAX_PHOTOS = 20;
+
+    // DOM Elements
+    const video = document.getElementById('camera');
+    const placeholder = document.getElementById('cameraPlaceholder');
+
+    const startButton = document.getElementById('startCamera');
+    const captureButton = document.getElementById('capturePhoto');
+    const stopButton = document.getElementById('stopCamera');
+    const submitButton = document.getElementById('submitPhotos');
+
+    // Device Upload Elements
+    const uploadPhotosButton = document.getElementById('uploadPhotosButton');
+    const photoFileInput = document.getElementById('photoFileInput');
+    const dropZone = document.getElementById('dropZone');
+
+    const canvas = document.getElementById('captureCanvas');
+    const gallery = document.getElementById('photoGallery');
+    const emptyState = document.getElementById('emptyState');
+
+    const photoCount = document.getElementById('photoCount');
+    const cameraError = document.getElementById('cameraError');
+    const uploadSuccess = document.getElementById('uploadSuccess');
+    const uploadSuccessMessage = document.getElementById('uploadSuccessMessage');
+
+    // Django URL for saving student photos
+    const uploadUrl = "{% url 'save_student_photos' student_code %}";
+    const csrfToken = "{{ csrf_token }}";
+
+    // Variables
+    let cameraStream = null;
+    let photos = [];
+    let nextPhotoId = 1;
+
+
+    // Error Handling
+    function showError(message) {
+        cameraError.textContent = message;
+        cameraError.classList.remove('d-none');
+    }
+
+    function clearError() {
+        cameraError.textContent = '';
+        cameraError.classList.add('d-none');
+    }
+
+    function showSuccess(message) {
+        uploadSuccessMessage.textContent = message;
+        uploadSuccess.classList.remove('d-none');
+    }
+
+    function clearSuccess() {
+        uploadSuccessMessage.textContent = '';
+        uploadSuccess.classList.add('d-none');
+    }
+
+
+    // Start Camera
+    async function startCamera() {
+        clearError();
+
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+
+            showError(
+                'Camera access is not supported here. Open this page using localhost or HTTPS in a supported browser.'
+            );
+
+            return;
+        }
+
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: {
+                        ideal: 'environment'
+                    }
+                },
+                audio: false
+            });
+
+            video.srcObject = cameraStream;
+            await video.play();
+
+            placeholder.classList.add('hidden');
+
+            startButton.disabled = true;
+            captureButton.disabled = false;
+            stopButton.disabled = false;
+
+        } catch (error) {
+
+            let message = 'Could not access the camera.';
+
+            if (error.name === 'NotAllowedError') {
+                message = 'Camera permission was denied. Allow camera access in your browser settings and try again.';
+
+            } else if (error.name === 'NotFoundError') {
+                message = 'No camera was found on this device.';
+
+            } else if (error.name === 'NotReadableError') {
+                message = 'The camera may already be in use by another application.';
+            }
+
+            showError(message);
+        }
+    }
+
+
+    // Stop Camera
+    function stopCamera() {
+
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(function (track) {
+                track.stop();
+            });
+        }
+
+        cameraStream = null;
+        video.srcObject = null;
+
+        placeholder.classList.remove('hidden');
+
+        startButton.disabled = false;
+        captureButton.disabled = true;
+        stopButton.disabled = true;
+    }
+
+
+    // Capture Photo Using Camera
+    function capturePhoto() {
+
+        if (photos.length >= MAX_PHOTOS) {
+            showError('You can add a maximum of ' + MAX_PHOTOS + ' photos.');
+            return;
+        }
+
+        if (!cameraStream || !video.videoWidth || !video.videoHeight) {
+
+            showError('The camera is not ready yet. Please try again.');
+
+            return;
+        }
+
+        clearError();
+        clearSuccess();
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const context = canvas.getContext('2d');
+
+        // Capture the original camera frame without mirroring.
+        context.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        const photo = {
+            id: nextPhotoId++,
+            dataUrl: canvas.toDataURL('image/jpeg', 0.92)
+        };
+
+        photos.push(photo);
+
+        renderPhotos();
+    }
+
+
+    // Read Device Image as Data URL
+    function readFileAsDataURL(file) {
+
+        return new Promise(function (resolve, reject) {
+
+            const reader = new FileReader();
+
+            reader.onload = function () {
+                resolve(reader.result);
+            };
+
+            reader.onerror = function () {
+                reject(
+                    new Error('Could not read the selected file: ' + file.name)
+                );
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+
+    // Upload Photos from Device
+    async function addDevicePhotos(files) {
+
+        clearError();
+        clearSuccess();
+
+        const selectedFiles = Array.from(files || []);
+
+        if (selectedFiles.length === 0) {
+            return;
+        }
+
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+        ];
+
+        const validFiles = selectedFiles.filter(function (file) {
+            return allowedTypes.includes(file.type);
+        });
+
+        const invalidCount = selectedFiles.length - validFiles.length;
+
+        if (validFiles.length === 0) {
+
+            showError(
+                'Please select JPG, PNG, or WEBP image files only.'
+            );
+
+            photoFileInput.value = '';
+
+            return;
+        }
+
+        // Respect the same limit enforced by the server.
+        const remainingSlots = MAX_PHOTOS - photos.length;
+        const acceptedFiles = validFiles.slice(0, remainingSlots);
+        const skippedLimitCount = validFiles.length - acceptedFiles.length;
+
+        if (remainingSlots <= 0) {
+            showError('You can add a maximum of ' + MAX_PHOTOS + ' photos.');
+            photoFileInput.value = '';
+            return;
+        }
+
+        try {
+
+            const dataUrls = await Promise.all(
+                acceptedFiles.map(readFileAsDataURL)
+            );
+
+            dataUrls.forEach(function (dataUrl) {
+
+                photos.push({
+                    id: nextPhotoId++,
+                    dataUrl: dataUrl
+                });
+
+            });
+
+            // Display uploaded images in the existing gallery.
+            renderPhotos();
+
+            let skippedMessage = '';
+
+            if (skippedLimitCount > 0) {
+                skippedMessage = ' ' + skippedLimitCount +
+                    ' photo(s) were skipped because the limit is ' + MAX_PHOTOS + '.';
+            }
+
+            if (invalidCount > 0) {
+                showError(
+                    invalidCount +
+                    ' unsupported file(s) were skipped. Select JPG, PNG, or WEBP images.' +
+                    skippedMessage
+                );
+            } else if (skippedMessage) {
+                showError(
+                    skippedMessage.trim().charAt(0).toUpperCase() +
+                    skippedMessage.trim().slice(1)
+                );
+            }
+
+        } catch (error) {
+
+            showError(
+                error.message || 'Could not read one or more selected photos.'
+            );
+
+        } finally {
+
+            // Allow selecting the same file again.
+            photoFileInput.value = '';
+        }
+    }
+
+
+    // Render Captured and Uploaded Photos
+    function renderPhotos() {
+
+        gallery.replaceChildren();
+
+        photos.forEach(function (photo, index) {
+
+            const column = document.createElement('div');
+            column.className = 'col-6 col-sm-4';
+
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+
+            const image = document.createElement('img');
+            image.className = 'photo-preview';
+            image.src = photo.dataUrl;
+            image.alt = 'Photo ' + (index + 1);
+
+            const label = document.createElement('div');
+            label.className = 'photo-label';
+            label.textContent = 'Photo ' + (index + 1);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'photo-remove';
+            removeButton.title = 'Remove photo';
+            removeButton.innerHTML = '&times;';
+
+            removeButton.addEventListener('click', function () {
+
+                photos = photos.filter(function (item) {
+                    return item.id !== photo.id;
+                });
+
+                renderPhotos();
+            });
+
+            card.appendChild(image);
+            card.appendChild(label);
+            card.appendChild(removeButton);
+
+            column.appendChild(card);
+            gallery.appendChild(column);
+        });
+
+        emptyState.classList.toggle('d-none', photos.length > 0);
+
+        photoCount.textContent = photos.length +
+            (photos.length === 1 ? ' photo' : ' photos');
+
+        submitButton.disabled = photos.length === 0;
+    }
+
+
+    // Convert Data URL to Blob
+    function dataURLtoBlob(dataURL) {
+
+        const parts = dataURL.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+
+        const binary = atob(parts[1]);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+
+        return new Blob(
+            [bytes],
+            { type: mime }
+        );
+    }
+
+
+    // Submit Photos to Django
+    async function submitPhotos() {
+
+        if (photos.length === 0) {
+            return;
+        }
+
+        clearError();
+        clearSuccess();
+
+        const formData = new FormData();
+
+        photos.forEach(function (photo, index) {
+
+            const blob = dataURLtoBlob(photo.dataUrl);
+
+            const file = new File(
+                [blob],
+                `student-photo-${index + 1}.jpg`,
+                { type: 'image/jpeg' }
+            );
+
+            formData.append('photos', file);
+        });
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Uploading...';
+
+        try {
+
+            const response = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+
+                throw new Error(
+                    result.message || 'Photo upload failed.'
+                );
+            }
+
+            showSuccess(result.message);
+
+            // Clear photos after successful upload.
+            photos = [];
+
+            renderPhotos();
+
+        } catch (error) {
+
+            showError(
+                error.message || 'Something went wrong while uploading photos.'
+            );
+
+        } finally {
+
+            submitButton.disabled = photos.length === 0;
+            submitButton.textContent = 'Submit Photos';
+        }
+    }
+
+
+    // Event Listeners
+
+    startButton.addEventListener('click', startCamera);
+
+    captureButton.addEventListener('click', capturePhoto);
+
+    stopButton.addEventListener('click', stopCamera);
+
+    submitButton.addEventListener('click', submitPhotos);
+
+
+    // Open Device File Picker
+    uploadPhotosButton.addEventListener('click', function () {
+        photoFileInput.click();
+    });
+
+
+    // Handle Selected Device Photos
+    photoFileInput.addEventListener('change', function (event) {
+        addDevicePhotos(event.target.files);
+    });
+
+
+    // Drag & Drop Photos
+    ['dragenter', 'dragover'].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.add('drag-over');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            dropZone.classList.remove('drag-over');
+        });
+    });
+
+    dropZone.addEventListener('drop', function (event) {
+        addDevicePhotos(event.dataTransfer.files);
+    });
+
+
+    // Release camera when leaving the page.
+    window.addEventListener('pagehide', stopCamera);
+
+})();
+</script>
+
+{% endblock %}
